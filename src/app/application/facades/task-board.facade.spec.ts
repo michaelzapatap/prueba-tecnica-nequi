@@ -16,9 +16,22 @@ import { TaskBoardFacade } from './task-board.facade';
 
 class FakeTaskRepository implements TaskRepository {
   private tasks: Task[] = [];
+  findAllCalls = 0;
 
   async findAll(): Promise<readonly Task[]> {
+    this.findAllCalls += 1;
     return this.tasks;
+  }
+
+  seedTasks(taskCount: number): void {
+    this.tasks = Array.from({ length: taskCount }, (_, index) => ({
+      id: `seed-task-${index}`,
+      title: `Tarea ${index}`,
+      categoryId: null,
+      isCompleted: false,
+      createdAt: new Date(Date.parse('2026-07-16T12:00:00.000Z') - index * 1_000).toISOString(),
+      updatedAt: new Date(Date.parse('2026-07-16T12:00:00.000Z') - index * 1_000).toISOString(),
+    }));
   }
 
   async findById(taskId: EntityId): Promise<Task | null> {
@@ -136,6 +149,7 @@ class FakeFeatureFlagService implements FeatureFlagService {
 describe('TaskBoardFacade', () => {
   let facade: TaskBoardFacade;
   let featureFlagService: FakeFeatureFlagService;
+  let taskRepository: FakeTaskRepository;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -149,6 +163,7 @@ describe('TaskBoardFacade', () => {
 
     facade = TestBed.inject(TaskBoardFacade);
     featureFlagService = TestBed.inject(FeatureFlagService) as FakeFeatureFlagService;
+    taskRepository = TestBed.inject(TASK_REPOSITORY) as FakeTaskRepository;
   });
 
   it('loads tasks and categories through application use cases', async () => {
@@ -211,5 +226,31 @@ describe('TaskBoardFacade', () => {
     await facade.deleteTask(task.id);
 
     expect(facade.tasks()).toEqual([]);
+  });
+
+  it('renders large lists in incremental batches and resets the window on filters', async () => {
+    taskRepository.seedTasks(65);
+
+    await facade.load();
+
+    expect(facade.visibleTasks()).toHaveSize(65);
+    expect(facade.renderedTasks()).toHaveSize(30);
+    expect(facade.remainingTaskCount()).toBe(35);
+
+    facade.loadMoreTasks();
+    expect(facade.renderedTasks()).toHaveSize(60);
+
+    facade.setCategoryFilter('uncategorized');
+    expect(facade.renderedTasks()).toHaveSize(30);
+  });
+
+  it('updates task state without reloading the complete repository after each mutation', async () => {
+    await facade.load();
+    await facade.createTask('Preparar entrega', null);
+    const [task] = facade.tasks();
+    await facade.setTaskCompletion(task, true);
+    await facade.deleteTask(task.id);
+
+    expect(taskRepository.findAllCalls).toBe(1);
   });
 });

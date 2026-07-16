@@ -8,7 +8,7 @@ Permitirá crear, completar y eliminar tareas; crear, editar y eliminar categor�
 
 ## Estado actual
 
-La base Ionic/Angular standalone existe. Cordova puede generar y preparar Android 15 e iOS 8.1. El dominio ejecutable, la persistencia local versionada, los casos de uso, el facade de aplicación, la pantalla principal y Firebase Remote Config con búsqueda controlada remotamente ya están implementados y cubiertos con pruebas unitarias. La conexión con un proyecto Firebase personal, las optimizaciones de listas grandes, las evidencias visuales y los binarios finales siguen pendientes.
+La aplicación funcional incluye dominio, persistencia local versionada, casos de uso, `TaskBoardFacade`, Firebase Remote Config, búsqueda y optimizaciones para listas grandes. La suite contiene 34 pruebas unitarias/de interacción. Cordova genera Android 15 e iOS 8.1; el entorno Windows actual ya compila un APK Android de depuración y dispone del emulador `Nequi_API_34`. Siguen pendientes la conexión con un proyecto Firebase personal, el endurecimiento de plugins/splash, las evidencias finales y los binarios firmados.
 
 ## Arquitectura
 
@@ -28,7 +28,7 @@ La UI depende de abstracciones mediante inyección de dependencias. Se usan Repo
 - Ionic 8, Angular 20 standalone, TypeScript 5.9 estricto y RxJS 7.8.
 - Cordova 13, Cordova Android 15 y Cordova iOS 8.1.
 - Firebase JavaScript SDK 12.16 y Remote Config modular.
-- Jasmine/Karma, ESLint y Prettier.
+- Jasmine/Karma, ESLint, Prettier y `tsx` 4.23 para benchmarks.
 
 Cordova está deprecado en Ionic, pero es requisito explícito de la prueba y se mantiene fijado localmente para builds reproducibles.
 
@@ -36,6 +36,7 @@ Cordova está deprecado en Ionic, pero es requisito explícito de la prueba y se
 
 - `src/app/domain`: modelos, reglas, factories, errores y contratos de repositorio.
 - `src/app/application`: casos de uso, providers y facades de estado.
+- `src/app/application/queries`: consultas puras y medibles sobre listas.
 - `src/app/infrastructure/persistence`: adaptador de persistencia local versionada.
 - `src/app/infrastructure/remote-config`: adaptador Firebase, cliente, providers y fallback.
 - `src/app/home`: pantalla principal de tareas y categorías.
@@ -45,6 +46,7 @@ Cordova está deprecado en Ionic, pero es requisito explícito de la prueba y se
 - `src/theme`: tokens visuales.
 - `resources`: iconos y splash nativos.
 - `config.xml`: configuración Cordova.
+- `tools`: benchmarks reproducibles que consumen el código real de aplicación.
 - PDF de la prueba: especificación original.
 
 No se versionan `node_modules`, `www`, `platforms`, `plugins`, `coverage` ni `tmp`.
@@ -83,6 +85,7 @@ La persistencia local usa un `VersionedLocalStore` sobre la abstracción `KeyVal
 - Si el JSON almacenado está corrupto o pertenece a una versión desconocida, la aplicación recupera un estado vacío `v1`.
 - Los repositorios concretos son `LocalTaskRepository` y `LocalCategoryRepository`.
 - La UI debe consumir `TASK_REPOSITORY` y `CATEGORY_REPOSITORY`, no clases concretas.
+- `VersionedLocalStore` mantiene en memoria el último estado deserializado; `write` actualiza la caché y `clear` la invalida.
 
 ## Flujos principales
 
@@ -92,7 +95,18 @@ La persistencia local usa un `VersionedLocalStore` sobre la abstracción `KeyVal
 - Se pueden crear, editar y eliminar categorías.
 - El filtro por categoría permite ver todas las tareas, tareas sin categoría o tareas de una categoría específica.
 - Cuando `task_search_enabled` está activa, el buscador filtra por título dentro del filtro de categoría seleccionado.
+- La UI renderiza inicialmente 30 tareas y amplía la ventana en lotes de 30 mediante “Mostrar más”. Cambiar filtro o búsqueda reinicia la ventana.
 - Los formularios visibles están en español; identificadores, métodos y archivos se mantienen en inglés.
+
+## Estrategia de rendimiento
+
+- `TaskBoardFacade` usa Angular Signals y `ChangeDetectionStrategy.OnPush`.
+- Contadores de estado se calculan juntos en una sola iteración.
+- Las categorías se indexan en un `Map` para lookup O(1) durante el render.
+- Crear, completar, eliminar o editar actualiza Signals con el resultado del caso de uso, sin releer ni reordenar el repositorio completo.
+- Eliminar una categoría sí recarga ambas colecciones porque la regla desacopla tareas afectadas dentro del repositorio.
+- El render incremental limita nodos Ionic y memoria visual sin asumir una altura fija de fila.
+- `npm run benchmark` mide el algoritmo real con 50.000 tareas y emite JSON con runtime, memoria aproximada y tiempos.
 
 ## Servicios externos y configuración
 
@@ -109,8 +123,9 @@ Firebase Remote Config controla `task_search_enabled` a través de `FeatureFlagS
 - ID nativo: `com.nequitasks.app`.
 - Nombre visible: `Mis tareas`.
 - Salida web Cordova: `www`.
-- Android puede compilarse en Windows.
-- El entorno actual necesita Android SDK Command-line Tools (`avdmanager`) y la plataforma SDK 36 antes de generar el APK.
+- Android compila en Windows con JDK 17, Android SDK Platform 36 y Build Tools 36.0.0.
+- El entorno actual usa Temurin 17.0.19, `ANDROID_HOME=%LOCALAPPDATA%\Android\Sdk` y el AVD `Nequi_API_34`.
+- El APK de depuración se genera en `platforms/android/app/build/outputs/apk/debug/app-debug.apk`; `platforms` no se versiona.
 - Un IPA firmado requiere macOS, Xcode, cuenta Apple Developer, certificados y perfiles.
 
 ## Autenticación y autorización

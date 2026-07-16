@@ -92,7 +92,7 @@
 
         @if (facade.visibleTasks().length > 0) {
           <ion-list class="task-list">
-            @for (task of facade.visibleTasks(); track task.id) {
+            @for (task of facade.renderedTasks(); track task.id) {
               <ion-item class="task-row" lines="full">
                 <ion-checkbox
                   slot="start"
@@ -128,6 +128,23 @@
               </ion-item>
             }
           </ion-list>
+
+          @if (facade.hasMoreTasks()) {
+            <ion-button
+              class="load-more-button"
+              expand="block"
+              fill="clear"
+              (click)="loadMoreTasks()"
+            >
+              Mostrar
+              {{
+                facade.renderBatchSize < facade.remainingTaskCount()
+                  ? facade.renderBatchSize
+                  : facade.remainingTaskCount()
+              }}
+              más ({{ facade.renderedTasks().length }} de {{ facade.visibleTasks().length }})
+            </ion-button>
+          }
         } @else {
           <div class="empty-state">
             <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>

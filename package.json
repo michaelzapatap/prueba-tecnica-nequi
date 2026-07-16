@@ -5,6 +5,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:network": "ng serve --host 0.0.0.0",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -13,8 +14,13 @@
     "typecheck": "tsc --project tsconfig.app.json --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "benchmark": "tsx tools/task-list.benchmark.ts",
     "cordova:prepare": "npm run build && cordova prepare",
+    "android:requirements": "cordova requirements android",
+    "android:devices": "adb devices -l",
     "android:build": "npm run build && cordova build android",
+    "android:run:device": "npm run build && cordova run android --device",
+    "android:run:emulator": "npm run build && cordova run android --emulator",
     "ios:prepare": "npm run build && cordova prepare ios"
   },
   "private": true,
@@ -68,6 +74,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "prettier": "^3.6.2",
+    "tsx": "4.23.1",
     "typescript": "~5.9.0"
   },
   "description": "Aplicación móvil de gestión de tareas y categorías para la prueba técnica de Nequi.",

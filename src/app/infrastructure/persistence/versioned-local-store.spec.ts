@@ -4,8 +4,10 @@ import { VersionedLocalStore } from './versioned-local-store';
 
 class InMemoryKeyValueStorage extends KeyValueStorage {
   private readonly values = new Map<string, string>();
+  readCount = 0;
 
   override getItem(key: string): string | null {
+    this.readCount += 1;
     return this.values.get(key) ?? null;
   }
 
@@ -60,5 +62,22 @@ describe('VersionedLocalStore', () => {
     }));
 
     expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual(store.read());
+  });
+
+  it('deserializes storage once and reuses the in-memory state', () => {
+    const firstState = store.read();
+    const secondState = store.read();
+
+    expect(secondState).toBe(firstState);
+    expect(storage.readCount).toBe(1);
+  });
+
+  it('invalidates its cache when cleared', () => {
+    const firstState = store.read();
+
+    store.clear();
+
+    expect(store.read()).not.toBe(firstState);
+    expect(storage.readCount).toBe(2);
   });
 });

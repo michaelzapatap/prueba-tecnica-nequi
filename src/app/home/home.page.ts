@@ -1,4 +1,11 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   IonBadge,
@@ -40,6 +47,7 @@ import { CategoryFilter, TaskBoardFacade } from '../application/facades/task-boa
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     IonBadge,
@@ -141,6 +149,10 @@ export class HomePage implements OnInit {
 
   async deleteTask(taskId: EntityId): Promise<void> {
     await this.facade.deleteTask(taskId);
+  }
+
+  loadMoreTasks(): void {
+    this.facade.loadMoreTasks();
   }
 
   async createCategory(): Promise<void> {

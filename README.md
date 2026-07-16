@@ -17,17 +17,17 @@ La base técnica, el dominio, la persistencia local versionada, la pantalla prin
 
 Ionic 8, Angular 20 standalone, TypeScript 5.9, Firebase JavaScript SDK 12.16, Cordova 13, Android 15, iOS 8.1, Jasmine/Karma, ESLint y Prettier.
 
-Se usa arquitectura por capas: dominio independiente de Ionic, casos de uso en aplicación, `TaskBoardFacade` con Angular Signals, repositorios y feature flags como contratos, y persistencia/Firebase como adaptadores. La persistencia local actual usa un store versionado `v1` sobre `localStorage` mediante `KeyValueStorage`. Detalles en `PROJECT_MEMORY.md` y `DECISIONS.md`.
+Se usa arquitectura por capas: dominio independiente de Ionic, casos de uso en aplicación, `TaskBoardFacade` con Angular Signals, repositorios y feature flags como contratos, y persistencia/Firebase como adaptadores. El store `v1` usa caché de deserialización sobre `localStorage`; la UI aplica `OnPush` y renderiza las tareas en lotes de 30. Detalles en `PROJECT_MEMORY.md` y `DECISIONS.md`.
 
 ## Requisitos
 
 - Node.js `>=20.17.0` o `>=22.9.0` y npm 10+.
-- Para Android: JDK, Android Studio/SDK, `JAVA_HOME` y `ANDROID_HOME`.
+- Para Android: JDK 17, SDK Platform 36, Build Tools 36.0.0, Command-line Tools, `JAVA_HOME` y `ANDROID_HOME`.
 - Para iOS: macOS, Xcode, Command Line Tools y credenciales Apple Developer.
 
 Windows no puede compilar ni firmar un IPA.
 
-Cordova Android 15 requiere Android SDK Command-line Tools, `avdmanager` accesible y la plataforma SDK 36. El entorno actual todavía no dispone de Command-line Tools, por lo que la preparación funciona pero la compilación del APK queda pendiente.
+El entorno de desarrollo actual ya tiene Temurin 17.0.19, Android Studio, SDK 36, Build Tools 36.0.0 y el AVD `Nequi_API_34`. Las variables se guardaron para el usuario de Windows; abra una terminal nueva para heredarlas.
 
 ## Instalación
 
@@ -66,6 +66,14 @@ npm start
 
 Normalmente estará disponible en `http://localhost:4200`.
 
+Para verla desde otro teléfono en la misma red Wi-Fi:
+
+```bash
+npm run start:network
+```
+
+Consulte la IPv4 del computador con `ipconfig` y abra `http://<ipv4>:4200` en el teléfono. Si Windows lo solicita, permita Node.js en redes privadas. Para simular tamaños de pantalla en Chrome use DevTools > Toggle device toolbar.
+
 ## Calidad y pruebas
 
 ```bash
@@ -76,7 +84,15 @@ npm run test:ci
 npm run format:check
 ```
 
-`test:ci` requiere Chrome o Chromium compatible con Karma. La suite actual contiene 25 pruebas y valida dominio, migración de almacenamiento, repositorios locales, facade, búsqueda, fallback de Remote Config y componentes base.
+`test:ci` requiere Chrome o Chromium compatible con Karma. La suite actual contiene 34 pruebas y valida dominio, migración/caché de almacenamiento, repositorios, facade, búsqueda, Remote Config, lotes grandes e interacciones de pantalla.
+
+## Rendimiento reproducible
+
+```bash
+npm run benchmark
+```
+
+El benchmark ejecuta las consultas reales con 50.000 tareas y entrega JSON. La referencia obtenida en Windows x64 con Node.js 22.17 fue: dataset aproximado de 10 MB, ordenamiento promedio de 6,9 ms, conteo de 0,4–0,6 ms, búsqueda de 1,3 ms y slice de 30 filas por debajo de 0,01 ms. Los valores son orientativos y deben compararse en la misma máquina/runtime.
 
 ## Compilación
 
@@ -102,6 +118,35 @@ Android:
 npm run android:build
 ```
 
+El APK debug queda en:
+
+```text
+platforms/android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Probar en emulador Android
+
+```bash
+npm run android:requirements
+emulator -avd Nequi_API_34
+npm run android:run:emulator
+```
+
+También puede abrir Android Studio > Device Manager y ejecutar `Nequi_API_34` antes del último comando.
+
+### Probar en dispositivo Android físico
+
+1. Active Opciones de desarrollador y Depuración USB en el teléfono.
+2. Conecte el cable USB y acepte la huella RSA mostrada por Android.
+3. Verifique y despliegue:
+
+```bash
+npm run android:devices
+npm run android:run:device
+```
+
+Si aparece `unauthorized`, desbloquee el teléfono y acepte nuevamente el diálogo RSA. No hay dispositivos físicos conectados actualmente.
+
 iOS desde macOS:
 
 ```bash
@@ -116,6 +161,8 @@ La firma final necesita credenciales del responsable de la entrega.
 ```text
 src/app/application/
                   Casos de uso, providers y facades
+src/app/application/queries/
+                  Consultas puras para listas y contadores
 src/app/domain/   Modelos, reglas y contratos de negocio
 src/app/infrastructure/persistence/
                   Persistencia local versionada
@@ -128,25 +175,32 @@ src/environments/ Configuración por entorno
 src/theme/        Tokens visuales
 resources/        Recursos nativos
 config.xml        Configuración Cordova
+tools/            Benchmarks reproducibles
 ```
 
 Las carpetas `features`, `core` y `shared` se agregarán cuando existan más pantallas o servicios transversales.
 
 ## Scripts
 
-| Script                    | Propósito             |
-| ------------------------- | --------------------- |
-| `npm start`               | Servidor local        |
-| `npm run build`           | Build web optimizado  |
-| `npm run lint`            | Análisis estático     |
-| `npm run typecheck`       | Validación TypeScript |
-| `npm test`                | Pruebas interactivas  |
-| `npm run test:ci`         | Pruebas con cobertura |
-| `npm run format`          | Aplicar formato       |
-| `npm run format:check`    | Verificar formato     |
-| `npm run cordova:prepare` | Preparar plataformas  |
-| `npm run android:build`   | Construir Android     |
-| `npm run ios:prepare`     | Preparar iOS          |
+| Script                         | Propósito                        |
+| ------------------------------ | -------------------------------- |
+| `npm start`                    | Servidor local                   |
+| `npm run start:network`        | Servidor visible en la red local |
+| `npm run build`                | Build web optimizado             |
+| `npm run benchmark`            | Benchmark con 50.000 tareas      |
+| `npm run lint`                 | Análisis estático                |
+| `npm run typecheck`            | Validación TypeScript            |
+| `npm test`                     | Pruebas interactivas             |
+| `npm run test:ci`              | Pruebas con cobertura            |
+| `npm run format`               | Aplicar formato                  |
+| `npm run format:check`         | Verificar formato                |
+| `npm run cordova:prepare`      | Preparar plataformas             |
+| `npm run android:requirements` | Verificar toolchain Android      |
+| `npm run android:devices`      | Listar dispositivos Android      |
+| `npm run android:build`        | Construir APK Android            |
+| `npm run android:run:device`   | Instalar en dispositivo físico   |
+| `npm run android:run:emulator` | Instalar en emulador             |
+| `npm run ios:prepare`          | Preparar iOS                     |
 
 ## Flujo y convenciones
 
@@ -160,7 +214,7 @@ Código, archivos, pruebas y commits en inglés; interfaz, accesibilidad y docum
 
 ## Despliegue
 
-El entregable final será un APK y un IPA firmado. No hay tiendas ni entorno de publicación configurados todavía. Antes de la entrega debe configurarse el proyecto Firebase personal siguiendo la sección anterior.
+El APK debug ya puede generarse y ejecutarse. El entregable final será un APK de release y un IPA firmados; no hay tiendas ni credenciales de publicación configuradas. Antes de la entrega debe configurarse el proyecto Firebase personal siguiendo la sección anterior.
 
 ## Licencia
 

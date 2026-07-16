@@ -24,20 +24,25 @@
 - Implementación de la bandera `task_search_enabled` con default local, caché y fallback offline.
 - Implementación de búsqueda de tareas por título, combinable con el filtro de categoría.
 - Pruebas unitarias de valores remotos, modo offline, Firebase no configurado y bandera desactivada.
+- Caché en memoria para evitar deserializaciones repetidas del almacenamiento local.
+- Actualizaciones incrementales de estado sin recargar el repositorio tras cada mutación de tarea.
+- Renderizado incremental en lotes de 30, `OnPush`, contadores en una pasada y lookup de categorías indexado.
+- Benchmark reproducible sobre 50.000 tareas mediante `npm run benchmark`.
+- Ampliación a 34 pruebas, incluidas interacciones de pantalla y listas grandes.
+- Instalación de JDK 17 y configuración persistente de `JAVA_HOME`, `CORDOVA_JAVA_HOME`, `ANDROID_HOME` y herramientas Android en `PATH`.
+- Creación del emulador `Nequi_API_34`, compilación del APK debug e instalación/arranque verificados.
+- Verificación visual en emulador y corrección del contraste forzando la paleta clara soportada actualmente.
 
 ## En progreso
 
-- Sin tareas activas; la siguiente fase prioriza rendimiento y pruebas de interacción.
+- Sin tareas activas; la siguiente fase prioriza configuración Firebase real y endurecimiento Cordova.
 
 ## Pendiente
 
 - Registrar la aplicación web en un proyecto Firebase personal, copiar su configuración pública y publicar `task_search_enabled` en Remote Config.
-- Optimizar listas grandes, carga inicial y memoria.
-- Ampliar pruebas de integración, componentes e interacción de UI.
-- Instalar Android SDK Command-line Tools y SDK 36 en el entorno de build.
 - Revisar los plugins Cordova heredados y la configuración de splash screen.
 - Resolver avisos de seguridad de herramientas cuando existan versiones compatibles.
-- Generar APK y preparar la generación firmada del IPA.
+- Generar APK de release firmado y preparar la generación firmada del IPA.
 - Crear evidencias visuales y respuestas técnicas.
 - Publicar repositorio y enlaces de binarios.
 

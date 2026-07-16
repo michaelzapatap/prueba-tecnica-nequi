@@ -83,3 +83,26 @@ Archivos:
 Motivo:
 
 Permitir que Firebase active o desactive una mejora visible sin comprometer el arranque, la funcionalidad offline ni el desacoplamiento de la aplicación.
+
+## 2026-07-16 08:55
+
+### Performance
+
+Optimización de listas grandes mediante caché de deserialización, actualizaciones incrementales de Signals, contadores en una pasada, categorías indexadas, `OnPush` y renderizado en lotes de 30. Se añadió un benchmark reproducible de 50.000 tareas y pruebas de interacción que elevaron la suite a 34 casos.
+
+También se habilitó el entorno Android: instalación de JDK 17, configuración de SDK/variables, creación del AVD `Nequi_API_34`, compilación del APK debug e instalación verificada. Una inspección visual en emulador detectó y corrigió el contraste inconsistente bajo modo oscuro.
+
+Archivos:
+
+- `src/app/application/queries/*`
+- `src/app/application/facades/task-board.facade.ts` y sus pruebas
+- `src/app/infrastructure/persistence/versioned-local-store.ts` y sus pruebas
+- `src/app/home/*`
+- `src/global.scss` y `src/theme/variables.scss`
+- `tools/task-list.benchmark.ts`
+- `package.json` y `package-lock.json`
+- `PROJECT_MEMORY.md`, `CHANGELOG.md`, `ROADMAP.md`, `DECISIONS.md` y `README.md`
+
+Motivo:
+
+Mantener una carga y navegación fluidas con volúmenes grandes, reducir memoria de render, medir regresiones y habilitar ciclos reales de prueba web/Android.

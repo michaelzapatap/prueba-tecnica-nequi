@@ -48,6 +48,30 @@ Se acepta deuda tecnológica y algunos plugins heredados requerirán revisión. 
 
 Estado: Activa
 
+## ADR-003: Feature flag para búsqueda de tareas
+
+Fecha: 2026-07-15
+
+### Contexto y problema
+
+Remote Config debe modificar una característica visible sin desactivar funcionalidades obligatorias.
+
+### Alternativas
+
+- Controlar categorías.
+- Controlar modo oscuro.
+- Controlar búsqueda.
+
+### Decisión y justificación
+
+Usar el booleano `task_search_enabled` y consumirlo a través del puerto `FeatureFlagService`. `FirebaseFeatureFlagService` coordina el fallback y un `RemoteConfigClient` encapsula el SDK modular. La búsqueda aporta valor en listas grandes, su efecto es demostrable y su ausencia no incumple requisitos.
+
+### Consecuencias
+
+El default local es `true`. La carga de datos no espera a Firebase; un fetch exitoso usa el valor activado y un fallo conserva caché/default. La UI muestra u oculta el buscador al resolver la bandera y limpia consultas activas si esta se deshabilita. Se añaden abstracciones, pero el facade y las pruebas no dependen del SDK.
+
+Estado: Activa
+
 ## ADR-004: Persistencia local versionada sobre adaptador intercambiable
 
 Fecha: 2026-07-15
@@ -73,26 +97,27 @@ La solución es simple, testeable y suficiente para la primera versión offline.
 
 Estado: Activa
 
-## ADR-003: Feature flag para búsqueda de tareas
+## ADR-005: Ventana incremental para listas grandes
 
-Fecha: 2026-07-15
+Fecha: 2026-07-16
 
 ### Contexto y problema
 
-Remote Config debe modificar una característica visible sin desactivar funcionalidades obligatorias.
+Renderizar todas las tareas con componentes Ionic aumenta el DOM, el tiempo de detección de cambios y la memoria. Las filas pueden variar de altura por título, categoría y estado.
 
 ### Alternativas
 
-- Controlar categorías.
-- Controlar modo oscuro.
-- Controlar búsqueda.
+- Renderizar la colección completa con `@for` y `track`.
+- Usar virtual scrolling con altura de fila fija.
+- Paginar los datos en el repositorio.
+- Mantener todos los datos locales y renderizar una ventana incremental.
 
 ### Decisión y justificación
 
-Usar el booleano `task_search_enabled` y consumirlo a través del puerto `FeatureFlagService`. `FirebaseFeatureFlagService` coordina el fallback y un `RemoteConfigClient` encapsula el SDK modular. La búsqueda aporta valor en listas grandes, su efecto es demostrable y su ausencia no incumple requisitos.
+Mantener la colección completa en Signals y renderizar lotes de 30 con una acción explícita “Mostrar más”. Se combina con `OnPush`, consultas puras, caché de deserialización y actualizaciones incrementales del facade. La estrategia tolera alturas variables, conserva búsqueda/filtros y no añade una dependencia de virtualización.
 
 ### Consecuencias
 
-El default local es `true`. La carga de datos no espera a Firebase; un fetch exitoso usa el valor activado y un fallo conserva caché/default. La UI muestra u oculta el buscador al resolver la bandera y limpia consultas activas si esta se deshabilita. Se añaden abstracciones, pero el facade y las pruebas no dependen del SDK.
+El DOM queda acotado al lote solicitado y las mutaciones comunes evitan lecturas completas. La búsqueda sigue recorriendo la colección local, pero el benchmark con 50.000 tareas permite detectar regresiones. Para volúmenes que excedan el alcance de `localStorage`, deberá reemplazarse el adaptador por IndexedDB/SQLite y añadir paginación de repositorio.
 
 Estado: Activa
