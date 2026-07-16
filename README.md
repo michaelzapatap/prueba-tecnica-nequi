@@ -11,13 +11,13 @@ Aplicación híbrida de gestión de tareas y categorías para la prueba técnica
 - Manejar listados grandes eficientemente.
 - Compilar Android e iOS con Cordova.
 
-La base técnica, el dominio y la persistencia local versionada están configurados; las pantallas funcionales de negocio están en desarrollo. Consulte `ROADMAP.md` para el estado exacto.
+La base técnica, el dominio, la persistencia local versionada y la pantalla principal funcional están configurados. Consulte `ROADMAP.md` para el estado exacto.
 
 ## Tecnologías y arquitectura
 
 Ionic 8, Angular 20 standalone, TypeScript 5.9, Cordova 13, Android 15, iOS 8.1, Jasmine/Karma, ESLint y Prettier. Firebase Remote Config está pendiente.
 
-Se usa arquitectura por capas: dominio independiente de Ionic, repositorios como contratos y persistencia/Firebase como adaptadores. La persistencia local actual usa un store versionado `v1` sobre `localStorage` mediante `KeyValueStorage`. Detalles en `PROJECT_MEMORY.md` y `DECISIONS.md`.
+Se usa arquitectura por capas: dominio independiente de Ionic, casos de uso en aplicación, `TaskBoardFacade` con Angular Signals, repositorios como contratos y persistencia/Firebase como adaptadores. La persistencia local actual usa un store versionado `v1` sobre `localStorage` mediante `KeyValueStorage`. Detalles en `PROJECT_MEMORY.md` y `DECISIONS.md`.
 
 ## Requisitos
 
@@ -59,7 +59,7 @@ npm run test:ci
 npm run format:check
 ```
 
-`test:ci` requiere Chrome o Chromium compatible con Karma. La suite actual valida dominio, migración de almacenamiento, repositorios locales y componentes base.
+`test:ci` requiere Chrome o Chromium compatible con Karma. La suite actual valida dominio, migración de almacenamiento, repositorios locales, facade de aplicación y componentes base.
 
 ## Compilación
 
@@ -97,10 +97,13 @@ La firma final necesita credenciales del responsable de la entrega.
 ## Estructura
 
 ```text
+src/app/application/
+                  Casos de uso, providers y facades
 src/app/domain/   Modelos, reglas y contratos de negocio
 src/app/infrastructure/persistence/
                   Persistencia local versionada
-src/app/          Aplicación y funcionalidades
+src/app/home/     Pantalla principal de tareas y categorías
+src/app/          Shell y rutas Angular
 src/assets/       Recursos web
 src/environments/ Configuración por entorno
 src/theme/        Tokens visuales
@@ -108,7 +111,7 @@ resources/        Recursos nativos
 config.xml        Configuración Cordova
 ```
 
-Las carpetas `application`, `features`, `core` y `shared` se agregarán junto con los flujos de pantalla y servicios transversales.
+Las carpetas `features`, `core` y `shared` se agregarán cuando existan más pantallas o servicios transversales.
 
 ## Scripts
 

@@ -14,19 +14,22 @@
 - Implementación de contratos de repositorio para tareas y categorías.
 - Implementación de persistencia local versionada con repositorios concretos.
 - Cobertura unitaria inicial para factories de dominio, migración de almacenamiento y repositorios locales.
+- Implementación de casos de uso de tareas y categorías.
+- Implementación de `TaskBoardFacade` con Angular Signals.
+- Implementación de pantalla principal para crear, completar y eliminar tareas.
+- Implementación de creación, edición, eliminación, asignación y filtro por categorías.
+- Construcción de una primera UX responsive y completamente en español.
+- Pruebas unitarias de facade y arranque de la pantalla principal.
 
 ## En progreso
 
-- Construcción de los flujos funcionales de tareas y categorías sobre los repositorios.
+- Integración de Firebase Remote Config para la bandera `task_search_enabled`.
 
 ## Pendiente
 
-- Implementar tareas: creación, finalización y eliminación.
-- Implementar categorías: creación, edición, eliminación, asignación y filtros.
-- Construir una UX adaptable, accesible y completamente en español.
 - Integrar Firebase Remote Config y `task_search_enabled`.
 - Optimizar listas grandes, carga inicial y memoria.
-- Ampliar pruebas de casos de uso, integración y componentes.
+- Ampliar pruebas de integración, componentes e interacción de UI.
 - Instalar Android SDK Command-line Tools y SDK 36 en el entorno de build.
 - Revisar los plugins Cordova heredados y la configuración de splash screen.
 - Resolver avisos de seguridad de herramientas cuando existan versiones compatibles.

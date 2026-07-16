@@ -16,7 +16,7 @@ La lógica de tareas, persistencia y configuración remota no debe quedar acopla
 
 ### Decisión y justificación
 
-Usar capas orientadas a funcionalidades, Repository, Use Case, Adapter y Facade; Angular Signals manejará el estado de UI. Esto aplica SOLID, facilita pruebas y evita el coste de NgRx para el alcance actual.
+Usar capas orientadas a funcionalidades, Repository, Use Case, Adapter y Facade; Angular Signals maneja el estado de UI mediante `TaskBoardFacade`. Esto aplica SOLID, facilita pruebas y evita el coste de NgRx para el alcance actual.
 
 ### Consecuencias
 

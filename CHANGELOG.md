@@ -40,3 +40,23 @@ Archivos:
 Motivo:
 
 Crear una base de negocio testeable y desacoplada de Ionic para soportar los flujos de tareas, categorías y persistencia offline.
+
+## 2026-07-16 07:25
+
+### Added
+
+Implementación de los casos de uso de tareas y categorías, `TaskBoardFacade` con Angular Signals y pantalla principal funcional en español para gestionar tareas y categorías.
+
+Archivos:
+
+- `src/app/application/*`
+- `src/app/home/home.page.ts`
+- `src/app/home/home.page.html`
+- `src/app/home/home.page.scss`
+- `src/app/home/home.page.spec.ts`
+- `src/main.ts`
+- `PROJECT_MEMORY.md`, `CHANGELOG.md`, `ROADMAP.md`, `DECISIONS.md` y `README.md`
+
+Motivo:
+
+Entregar los flujos obligatorios de creación, finalización, eliminación, asignación y filtrado sobre la arquitectura desacoplada del proyecto.

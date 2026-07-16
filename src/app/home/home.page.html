@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title> Mis tareas </ion-title>
+    <ion-title>Mis tareas</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -11,8 +11,226 @@
     </ion-toolbar>
   </ion-header>
 
-  <div id="container">
-    <strong>Organiza lo que importa</strong>
-    <p>Tu lista de tareas estará disponible muy pronto.</p>
-  </div>
+  <main class="task-shell">
+    <section class="summary-band" aria-label="Resumen de tareas">
+      <div>
+        <p class="eyebrow">Organización diaria</p>
+        <h1>Mis tareas</h1>
+      </div>
+
+      <div class="summary-counters">
+        <span
+          ><strong>{{ facade.pendingTasks() }}</strong> pendientes</span
+        >
+        <span
+          ><strong>{{ facade.completedTasks() }}</strong> completadas</span
+        >
+      </div>
+    </section>
+
+    @if (facade.errorMessage(); as errorMessage) {
+      <ion-text color="danger" class="feedback-message">
+        <p>{{ errorMessage }}</p>
+      </ion-text>
+    }
+
+    <section class="workspace">
+      <section class="task-panel" aria-label="Listado de tareas">
+        <form class="task-form" (ngSubmit)="createTask()">
+          <ion-input
+            label="Nueva tarea"
+            labelPlacement="stacked"
+            placeholder="Ej. Preparar entrega"
+            [ngModel]="taskTitle()"
+            name="taskTitle"
+            (ngModelChange)="onTaskTitleChange($event)"
+          ></ion-input>
+
+          <ion-select
+            label="Categoría"
+            labelPlacement="stacked"
+            interface="popover"
+            [ngModel]="selectedTaskCategoryId()"
+            name="taskCategory"
+            (ionChange)="onTaskCategoryChange($any($event).detail.value)"
+          >
+            <ion-select-option value="">Sin categoría</ion-select-option>
+            @for (category of facade.categories(); track category.id) {
+              <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
+            }
+          </ion-select>
+
+          <ion-button type="submit" [disabled]="!canCreateTask() || facade.isLoading()">
+            <ion-icon name="add-outline" slot="start"></ion-icon>
+            Agregar
+          </ion-button>
+        </form>
+
+        <ion-segment
+          class="category-filter"
+          scrollable="true"
+          [value]="facade.selectedCategory()"
+          (ionChange)="onCategoryFilterChange($any($event).detail.value)"
+        >
+          <ion-segment-button value="all">Todas</ion-segment-button>
+          <ion-segment-button value="uncategorized">Sin categoría</ion-segment-button>
+          @for (category of facade.categories(); track category.id) {
+            <ion-segment-button [value]="category.id">{{ category.name }}</ion-segment-button>
+          }
+        </ion-segment>
+
+        @if (facade.visibleTasks().length > 0) {
+          <ion-list class="task-list">
+            @for (task of facade.visibleTasks(); track task.id) {
+              <ion-item class="task-row" lines="full">
+                <ion-checkbox
+                  slot="start"
+                  [checked]="task.isCompleted"
+                  [attr.aria-label]="'Cambiar estado de ' + task.title"
+                  (ionChange)="toggleTask(task, $any($event).detail.checked)"
+                ></ion-checkbox>
+
+                <ion-label>
+                  <h2 [class.completed]="task.isCompleted">{{ task.title }}</h2>
+                  <p>
+                    <span
+                      class="category-dot"
+                      [style.background]="facade.getCategoryColor(task.categoryId)"
+                    ></span>
+                    {{ facade.getCategoryName(task.categoryId) }}
+                  </p>
+                </ion-label>
+
+                @if (task.isCompleted) {
+                  <ion-badge color="success">Lista</ion-badge>
+                }
+
+                <ion-button
+                  slot="end"
+                  fill="clear"
+                  color="danger"
+                  [attr.aria-label]="'Eliminar ' + task.title"
+                  (click)="deleteTask(task.id)"
+                >
+                  <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+              </ion-item>
+            }
+          </ion-list>
+        } @else {
+          <div class="empty-state">
+            <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
+            <p>No hay tareas en esta vista.</p>
+          </div>
+        }
+      </section>
+
+      <aside class="category-panel" aria-label="Administración de categorías">
+        <div class="panel-heading">
+          <ion-icon name="pricetag-outline" aria-hidden="true"></ion-icon>
+          <h2>Categorías</h2>
+        </div>
+
+        <form class="category-form" (ngSubmit)="createCategory()">
+          <ion-input
+            label="Nueva categoría"
+            labelPlacement="stacked"
+            placeholder="Ej. Trabajo"
+            [ngModel]="categoryName()"
+            name="categoryName"
+            (ngModelChange)="onCategoryNameChange($event)"
+          ></ion-input>
+
+          <label class="color-field">
+            Color
+            <input type="color" [value]="categoryColor()" (input)="onCategoryColorChange($event)" />
+          </label>
+
+          <ion-button
+            type="submit"
+            expand="block"
+            [disabled]="!canCreateCategory() || facade.isLoading()"
+          >
+            <ion-icon name="add-outline" slot="start"></ion-icon>
+            Crear
+          </ion-button>
+        </form>
+
+        <ion-list class="category-list">
+          @for (category of facade.categories(); track category.id) {
+            @if (editingCategoryId() === category.id) {
+              <ion-item class="category-edit-row" lines="full">
+                <ion-label>
+                  <ion-input
+                    label="Nombre"
+                    labelPlacement="stacked"
+                    [ngModel]="editingCategoryName()"
+                    name="editingCategoryName"
+                    (ngModelChange)="onEditingCategoryNameChange($event)"
+                  ></ion-input>
+
+                  <label class="color-field inline">
+                    Color
+                    <input
+                      type="color"
+                      [value]="editingCategoryColor()"
+                      (input)="onEditingCategoryColorChange($event)"
+                    />
+                  </label>
+                </ion-label>
+
+                <ion-buttons slot="end">
+                  <ion-button
+                    fill="clear"
+                    color="success"
+                    [disabled]="!canUpdateCategory()"
+                    aria-label="Guardar categoría"
+                    (click)="saveCategoryEdit(category.id)"
+                  >
+                    <ion-icon name="checkmark-circle-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    color="medium"
+                    aria-label="Cancelar edición"
+                    (click)="cancelCategoryEdit()"
+                  >
+                    <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ion-item>
+            } @else {
+              <ion-item lines="full">
+                <span class="category-swatch" [style.background]="category.color"></span>
+                <ion-label>
+                  <h3>{{ category.name }}</h3>
+                </ion-label>
+
+                <ion-buttons slot="end">
+                  <ion-button
+                    fill="clear"
+                    color="medium"
+                    [attr.aria-label]="'Editar ' + category.name"
+                    (click)="startCategoryEdit(category)"
+                  >
+                    <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    color="danger"
+                    [attr.aria-label]="'Eliminar ' + category.name"
+                    (click)="deleteCategory(category.id)"
+                  >
+                    <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ion-item>
+            }
+          } @empty {
+            <p class="empty-copy">Aún no hay categorías.</p>
+          }
+        </ion-list>
+      </aside>
+    </section>
+  </main>
 </ion-content>

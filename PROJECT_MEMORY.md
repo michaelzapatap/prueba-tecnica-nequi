@@ -8,20 +8,20 @@ Permitirá crear, completar y eliminar tareas; crear, editar y eliminar categor�
 
 ## Estado actual
 
-La base Ionic/Angular standalone existe. Cordova puede generar y preparar Android 15 e iOS 8.1. El dominio ejecutable, los modelos `Task` y `Category`, los contratos de repositorio y la persistencia local versionada ya están implementados y cubiertos con pruebas unitarias. La interfaz definitiva, los flujos de tareas/categorías y Firebase siguen pendientes.
+La base Ionic/Angular standalone existe. Cordova puede generar y preparar Android 15 e iOS 8.1. El dominio ejecutable, los modelos `Task` y `Category`, los contratos de repositorio, la persistencia local versionada, los casos de uso, el facade de aplicación y la pantalla principal funcional ya están implementados y cubiertos con pruebas unitarias. Firebase Remote Config, optimizaciones de listas grandes, evidencias visuales y binarios finales siguen pendientes.
 
 ## Arquitectura
 
 Arquitectura por capas orientada a funcionalidades:
 
 - `domain`: entidades, reglas y contratos sin dependencias de framework.
-- `application`: casos de uso y coordinación del estado.
+- `application`: casos de uso y facade de estado con Angular Signals.
 - `infrastructure`: persistencia, Firebase y adaptadores.
 - `features`: pantallas de tareas y categorías.
 - `core`: configuración y servicios transversales singleton.
 - `shared`: piezas reutilizables sin reglas de negocio.
 
-La UI depende de abstracciones mediante inyección de dependencias. Se usan Repository y Adapter; Use Case y Facade se agregarán al construir los flujos de pantalla. El estado reactivo se expondrá con Angular Signals.
+La UI depende de abstracciones mediante inyección de dependencias. Se usan Repository, Use Case, Adapter y Facade. El estado reactivo se expone con Angular Signals en `TaskBoardFacade`.
 
 ## Tecnologías y dependencias críticas
 
@@ -35,8 +35,10 @@ Cordova está deprecado en Ionic, pero es requisito explícito de la prueba y se
 ## Repositorio
 
 - `src/app/domain`: modelos, reglas, factories, errores y contratos de repositorio.
+- `src/app/application`: casos de uso, providers y facades de estado.
 - `src/app/infrastructure/persistence`: adaptador de persistencia local versionada.
-- `src/app`: aplicación Angular.
+- `src/app/home`: pantalla principal de tareas y categorías.
+- `src/app`: shell y rutas Angular.
 - `src/assets`: recursos web.
 - `src/environments`: configuración pública por entorno.
 - `src/theme`: tokens visuales.
@@ -80,6 +82,15 @@ La persistencia local usa un `VersionedLocalStore` sobre la abstracción `KeyVal
 - Si el JSON almacenado está corrupto o pertenece a una versión desconocida, la aplicación recupera un estado vacío `v1`.
 - Los repositorios concretos son `LocalTaskRepository` y `LocalCategoryRepository`.
 - La UI debe consumir `TASK_REPOSITORY` y `CATEGORY_REPOSITORY`, no clases concretas.
+
+## Flujos principales
+
+- La pantalla principal carga tareas y categorías a través de `TaskBoardFacade`.
+- Se pueden crear tareas con o sin categoría.
+- Se pueden completar y eliminar tareas.
+- Se pueden crear, editar y eliminar categorías.
+- El filtro por categoría permite ver todas las tareas, tareas sin categoría o tareas de una categoría específica.
+- Los formularios visibles están en español; identificadores, métodos y archivos se mantienen en inglés.
 
 ## Servicios externos y configuración
 
