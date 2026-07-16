@@ -145,7 +145,7 @@ npm run android:devices
 npm run android:run:device
 ```
 
-Si aparece `unauthorized`, desbloquee el teléfono y acepte nuevamente el diálogo RSA. No hay dispositivos físicos conectados actualmente.
+Si aparece `unauthorized`, desbloquee el teléfono y acepte nuevamente el diálogo RSA. La instalación y apertura por ADB se verificaron en un dispositivo Android físico; su disponibilidad posterior depende de que permanezca conectado y autorizado.
 
 iOS desde macOS:
 

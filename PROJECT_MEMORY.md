@@ -8,7 +8,7 @@ Permitirá crear, completar y eliminar tareas; crear, editar y eliminar categor�
 
 ## Estado actual
 
-La aplicación funcional incluye dominio, persistencia local versionada, casos de uso, `TaskBoardFacade`, Firebase Remote Config, búsqueda y optimizaciones para listas grandes. La suite contiene 34 pruebas unitarias/de interacción. Cordova genera Android 15 e iOS 8.1; el entorno Windows actual ya compila un APK Android de depuración y dispone del emulador `Nequi_API_34`. Siguen pendientes la conexión con un proyecto Firebase personal, el endurecimiento de plugins/splash, las evidencias finales y los binarios firmados.
+La aplicación funcional incluye dominio, persistencia local versionada, casos de uso, `TaskBoardFacade`, Firebase Remote Config, búsqueda y optimizaciones para listas grandes. La suite contiene 34 pruebas unitarias/de interacción. Cordova genera Android 15 e iOS 8.1; el entorno Windows actual ya compila un APK Android de depuración, dispone del emulador `Nequi_API_34` y verificó instalación/arranque en un dispositivo Android físico. Siguen pendientes la conexión con un proyecto Firebase personal, el endurecimiento de plugins/splash, las evidencias finales y los binarios firmados.
 
 ## Arquitectura
 

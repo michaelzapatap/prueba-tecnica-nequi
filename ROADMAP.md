@@ -30,7 +30,7 @@
 - Benchmark reproducible sobre 50.000 tareas mediante `npm run benchmark`.
 - Ampliación a 34 pruebas, incluidas interacciones de pantalla y listas grandes.
 - Instalación de JDK 17 y configuración persistente de `JAVA_HOME`, `CORDOVA_JAVA_HOME`, `ANDROID_HOME` y herramientas Android en `PATH`.
-- Creación del emulador `Nequi_API_34`, compilación del APK debug e instalación/arranque verificados.
+- Creación del emulador `Nequi_API_34`, compilación del APK debug e instalación/arranque verificados tanto en emulador como en dispositivo Android físico.
 - Verificación visual en emulador y corrección del contraste forzando la paleta clara soportada actualmente.
 
 ## En progreso

@@ -90,7 +90,7 @@ Permitir que Firebase active o desactive una mejora visible sin comprometer el a
 
 Optimización de listas grandes mediante caché de deserialización, actualizaciones incrementales de Signals, contadores en una pasada, categorías indexadas, `OnPush` y renderizado en lotes de 30. Se añadió un benchmark reproducible de 50.000 tareas y pruebas de interacción que elevaron la suite a 34 casos.
 
-También se habilitó el entorno Android: instalación de JDK 17, configuración de SDK/variables, creación del AVD `Nequi_API_34`, compilación del APK debug e instalación verificada. Una inspección visual en emulador detectó y corrigió el contraste inconsistente bajo modo oscuro.
+También se habilitó el entorno Android: instalación de JDK 17, configuración de SDK/variables, creación del AVD `Nequi_API_34`, compilación del APK debug e instalación verificada en emulador y dispositivo físico. Una inspección visual detectó y corrigió el contraste inconsistente bajo modo oscuro.
 
 Archivos:
 
