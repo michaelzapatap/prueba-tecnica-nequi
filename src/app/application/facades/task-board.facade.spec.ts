@@ -11,6 +11,7 @@ import { CategoryRepository } from '../../domain/repositories/category.repositor
 import { CATEGORY_REPOSITORY, TASK_REPOSITORY } from '../../domain/repositories/repository.tokens';
 import { TaskRepository } from '../../domain/repositories/task.repository';
 import { provideApplicationServices } from '../application.providers';
+import { FeatureFlagService } from '../feature-flags/feature-flag.service';
 import { TaskBoardFacade } from './task-board.facade';
 
 class FakeTaskRepository implements TaskRepository {
@@ -124,19 +125,30 @@ class FakeCategoryRepository implements CategoryRepository {
   }
 }
 
+class FakeFeatureFlagService implements FeatureFlagService {
+  isSearchEnabled = true;
+
+  async isEnabled(): Promise<boolean> {
+    return this.isSearchEnabled;
+  }
+}
+
 describe('TaskBoardFacade', () => {
   let facade: TaskBoardFacade;
+  let featureFlagService: FakeFeatureFlagService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
         { provide: TASK_REPOSITORY, useClass: FakeTaskRepository },
         { provide: CATEGORY_REPOSITORY, useClass: FakeCategoryRepository },
+        { provide: FeatureFlagService, useClass: FakeFeatureFlagService },
         provideApplicationServices(),
       ],
     });
 
     facade = TestBed.inject(TaskBoardFacade);
+    featureFlagService = TestBed.inject(FeatureFlagService) as FakeFeatureFlagService;
   });
 
   it('loads tasks and categories through application use cases', async () => {
@@ -162,6 +174,29 @@ describe('TaskBoardFacade', () => {
 
     facade.setCategoryFilter('uncategorized');
     expect(facade.visibleTasks().map((task) => task.title)).toEqual(['Leer correo']);
+  });
+
+  it('filters task titles when remote search is enabled', async () => {
+    await facade.load();
+    await facade.createTask('Preparar demostración', null);
+    await facade.createTask('Enviar correo', null);
+
+    facade.setSearchQuery('demo');
+
+    expect(facade.isTaskSearchEnabled()).toBeTrue();
+    expect(facade.visibleTasks().map((task) => task.title)).toEqual(['Preparar demostración']);
+  });
+
+  it('ignores search queries when the remote flag is disabled', async () => {
+    featureFlagService.isSearchEnabled = false;
+    await facade.load();
+    await facade.createTask('Preparar demostración', null);
+
+    facade.setSearchQuery('sin coincidencias');
+
+    expect(facade.isTaskSearchEnabled()).toBeFalse();
+    expect(facade.searchQuery()).toBe('');
+    expect(facade.visibleTasks()).toHaveSize(1);
   });
 
   it('updates counters when a task is completed and deleted', async () => {

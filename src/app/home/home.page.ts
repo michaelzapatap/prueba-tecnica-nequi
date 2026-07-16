@@ -16,6 +16,7 @@ import {
   IonSegmentButton,
   IonSelect,
   IonSelectOption,
+  IonSearchbar,
   IonText,
   IonTitle,
   IonToolbar,
@@ -56,6 +57,7 @@ import { CategoryFilter, TaskBoardFacade } from '../application/facades/task-boa
     IonSegmentButton,
     IonSelect,
     IonSelectOption,
+    IonSearchbar,
     IonText,
     IonTitle,
     IonToolbar,
@@ -100,6 +102,10 @@ export class HomePage implements OnInit {
 
   onTaskTitleChange(title: string | number | null | undefined): void {
     this.taskTitle.set(String(title ?? ''));
+  }
+
+  onSearchQueryChange(searchQuery: string | null | undefined): void {
+    this.facade.setSearchQuery(searchQuery ?? '');
   }
 
   onCategoryNameChange(name: string | number | null | undefined): void {

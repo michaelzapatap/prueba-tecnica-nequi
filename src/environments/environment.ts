@@ -4,6 +4,21 @@
 
 export const environment = {
   production: false,
+  firebase: {
+    apiKey: '',
+    authDomain: '',
+    projectId: '',
+    storageBucket: '',
+    messagingSenderId: '',
+    appId: '',
+  },
+  remoteConfig: {
+    fetchTimeoutMillis: 3_000,
+    minimumFetchIntervalMillis: 60_000,
+  },
+  featureFlags: {
+    task_search_enabled: true,
+  },
 };
 
 /*

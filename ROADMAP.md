@@ -20,14 +20,18 @@
 - Implementación de creación, edición, eliminación, asignación y filtro por categorías.
 - Construcción de una primera UX responsive y completamente en español.
 - Pruebas unitarias de facade y arranque de la pantalla principal.
+- Integración desacoplada de Firebase Remote Config mediante su SDK modular.
+- Implementación de la bandera `task_search_enabled` con default local, caché y fallback offline.
+- Implementación de búsqueda de tareas por título, combinable con el filtro de categoría.
+- Pruebas unitarias de valores remotos, modo offline, Firebase no configurado y bandera desactivada.
 
 ## En progreso
 
-- Integración de Firebase Remote Config para la bandera `task_search_enabled`.
+- Sin tareas activas; la siguiente fase prioriza rendimiento y pruebas de interacción.
 
 ## Pendiente
 
-- Integrar Firebase Remote Config y `task_search_enabled`.
+- Registrar la aplicación web en un proyecto Firebase personal, copiar su configuración pública y publicar `task_search_enabled` en Remote Config.
 - Optimizar listas grandes, carga inicial y memoria.
 - Ampliar pruebas de integración, componentes e interacción de UI.
 - Instalar Android SDK Command-line Tools y SDK 36 en el entorno de build.

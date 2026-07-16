@@ -4,6 +4,7 @@ import { DomainError } from '../../domain/errors/domain-error';
 import { Category } from '../../domain/models/category.model';
 import { EntityId } from '../../domain/models/entity-id.model';
 import { Task } from '../../domain/models/task.model';
+import { FEATURE_FLAGS, FeatureFlagService } from '../feature-flags/feature-flag.service';
 import { CategoryUseCases } from '../use-cases/category.use-cases';
 import { TaskUseCases } from '../use-cases/task.use-cases';
 
@@ -13,15 +14,20 @@ export type CategoryFilter = EntityId | 'all' | 'uncategorized';
 export class TaskBoardFacade {
   private readonly taskUseCases = inject(TaskUseCases);
   private readonly categoryUseCases = inject(CategoryUseCases);
+  private readonly featureFlagService = inject(FeatureFlagService);
   private readonly taskState = signal<readonly Task[]>([]);
   private readonly categoryState = signal<readonly Category[]>([]);
   private readonly selectedCategoryState = signal<CategoryFilter>('all');
+  private readonly searchQueryState = signal('');
+  private readonly taskSearchEnabledState = signal(false);
   private readonly loadingState = signal(false);
   private readonly errorState = signal<string | null>(null);
 
   readonly tasks = this.taskState.asReadonly();
   readonly categories = this.categoryState.asReadonly();
   readonly selectedCategory = this.selectedCategoryState.asReadonly();
+  readonly searchQuery = this.searchQueryState.asReadonly();
+  readonly isTaskSearchEnabled = this.taskSearchEnabledState.asReadonly();
   readonly isLoading = this.loadingState.asReadonly();
   readonly errorMessage = this.errorState.asReadonly();
 
@@ -35,20 +41,25 @@ export class TaskBoardFacade {
 
   readonly visibleTasks = computed(() => {
     const selectedCategory = this.selectedCategoryState();
-    const tasks = this.taskState();
+    const searchQuery = this.searchQueryState().trim().toLocaleLowerCase('es');
+    let tasks = this.taskState();
 
-    if (selectedCategory === 'all') {
+    if (selectedCategory === 'uncategorized') {
+      tasks = tasks.filter((task) => task.categoryId === null);
+    } else if (selectedCategory !== 'all') {
+      tasks = tasks.filter((task) => task.categoryId === selectedCategory);
+    }
+
+    if (!this.taskSearchEnabledState() || !searchQuery) {
       return tasks;
     }
 
-    if (selectedCategory === 'uncategorized') {
-      return tasks.filter((task) => task.categoryId === null);
-    }
-
-    return tasks.filter((task) => task.categoryId === selectedCategory);
+    return tasks.filter((task) => task.title.toLocaleLowerCase('es').includes(searchQuery));
   });
 
   async load(): Promise<void> {
+    const featureFlagRequest = this.loadFeatureFlags();
+
     await this.run(async () => {
       const [tasks, categories] = await Promise.all([
         this.taskUseCases.getTasks(),
@@ -58,10 +69,16 @@ export class TaskBoardFacade {
       this.taskState.set(this.sortTasks(tasks));
       this.categoryState.set(this.sortCategories(categories));
     });
+
+    await featureFlagRequest;
   }
 
   setCategoryFilter(categoryFilter: CategoryFilter): void {
     this.selectedCategoryState.set(categoryFilter);
+  }
+
+  setSearchQuery(searchQuery: string): void {
+    this.searchQueryState.set(this.taskSearchEnabledState() ? searchQuery : '');
   }
 
   clearError(): void {
@@ -134,6 +151,24 @@ export class TaskBoardFacade {
 
   private async reloadCategories(): Promise<void> {
     this.categoryState.set(this.sortCategories(await this.categoryUseCases.getCategories()));
+  }
+
+  private async loadFeatureFlags(): Promise<void> {
+    let isTaskSearchEnabled = false;
+
+    try {
+      isTaskSearchEnabled = await this.featureFlagService.isEnabled(
+        FEATURE_FLAGS.taskSearchEnabled,
+      );
+    } catch {
+      isTaskSearchEnabled = false;
+    }
+
+    this.taskSearchEnabledState.set(isTaskSearchEnabled);
+
+    if (!isTaskSearchEnabled) {
+      this.searchQueryState.set('');
+    }
   }
 
   private async run(action: () => Promise<void>): Promise<void> {

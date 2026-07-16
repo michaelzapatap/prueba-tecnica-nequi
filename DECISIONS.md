@@ -89,10 +89,10 @@ Remote Config debe modificar una característica visible sin desactivar funciona
 
 ### Decisión y justificación
 
-Usar el booleano `task_search_enabled`. La búsqueda aporta valor en listas grandes, su efecto es demostrable y su ausencia no incumple requisitos.
+Usar el booleano `task_search_enabled` y consumirlo a través del puerto `FeatureFlagService`. `FirebaseFeatureFlagService` coordina el fallback y un `RemoteConfigClient` encapsula el SDK modular. La búsqueda aporta valor en listas grandes, su efecto es demostrable y su ausencia no incumple requisitos.
 
 ### Consecuencias
 
-Existirá un valor local predeterminado; la UI reaccionará sin reinicio y cualquier fallo de Firebase será recuperable.
+El default local es `true`. La carga de datos no espera a Firebase; un fetch exitoso usa el valor activado y un fallo conserva caché/default. La UI muestra u oculta el buscador al resolver la bandera y limpia consultas activas si esta se deshabilita. Se añaden abstracciones, pero el facade y las pruebas no dependen del SDK.
 
 Estado: Activa

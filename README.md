@@ -11,13 +11,13 @@ Aplicación híbrida de gestión de tareas y categorías para la prueba técnica
 - Manejar listados grandes eficientemente.
 - Compilar Android e iOS con Cordova.
 
-La base técnica, el dominio, la persistencia local versionada y la pantalla principal funcional están configurados. Consulte `ROADMAP.md` para el estado exacto.
+La base técnica, el dominio, la persistencia local versionada, la pantalla principal funcional y la integración de Remote Config están implementados. Consulte `ROADMAP.md` para el estado exacto.
 
 ## Tecnologías y arquitectura
 
-Ionic 8, Angular 20 standalone, TypeScript 5.9, Cordova 13, Android 15, iOS 8.1, Jasmine/Karma, ESLint y Prettier. Firebase Remote Config está pendiente.
+Ionic 8, Angular 20 standalone, TypeScript 5.9, Firebase JavaScript SDK 12.16, Cordova 13, Android 15, iOS 8.1, Jasmine/Karma, ESLint y Prettier.
 
-Se usa arquitectura por capas: dominio independiente de Ionic, casos de uso en aplicación, `TaskBoardFacade` con Angular Signals, repositorios como contratos y persistencia/Firebase como adaptadores. La persistencia local actual usa un store versionado `v1` sobre `localStorage` mediante `KeyValueStorage`. Detalles en `PROJECT_MEMORY.md` y `DECISIONS.md`.
+Se usa arquitectura por capas: dominio independiente de Ionic, casos de uso en aplicación, `TaskBoardFacade` con Angular Signals, repositorios y feature flags como contratos, y persistencia/Firebase como adaptadores. La persistencia local actual usa un store versionado `v1` sobre `localStorage` mediante `KeyValueStorage`. Detalles en `PROJECT_MEMORY.md` y `DECISIONS.md`.
 
 ## Requisitos
 
@@ -39,7 +39,24 @@ npm ci
 
 ## Configuración y variables de entorno
 
-La base no requiere variables. Firebase añadirá configuración pública por plataforma y entorno; nunca se versionarán secretos, certificados o contraseñas. El ID nativo es `com.nequitasks.app` y el nombre visible es `Mis tareas`.
+La configuración está tipada en `src/environments/environment.ts` y `src/environments/environment.prod.ts`. Reemplace los valores vacíos de `firebase` por el objeto público entregado al registrar una aplicación web en Firebase Console:
+
+```typescript
+firebase: {
+  apiKey: '...',
+  authDomain: 'your-project.firebaseapp.com',
+  projectId: 'your-project',
+  storageBucket: 'your-project.firebasestorage.app',
+  messagingSenderId: '...',
+  appId: '...',
+}
+```
+
+En Firebase Console, abra **Remote Config**, cree el parámetro booleano `task_search_enabled`, defina su valor predeterminado y publique los cambios. Para demostrar la bandera, alterne entre `true` y `false`, publique y vuelva a abrir la aplicación. En desarrollo se permite un fetch por minuto; producción usa el intervalo recomendado de 12 horas.
+
+El fallback incluido es `true`: la búsqueda permanece disponible si falta configuración, no hay conexión, Remote Config no es soportado o el fetch excede 3 segundos. Si existe un valor activado en caché, Firebase lo conserva y lo usa antes del default local.
+
+El objeto de configuración web identifica el proyecto y no es una cuenta de servicio. Nunca registre claves privadas, certificados ni contraseñas. El ID nativo es `com.nequitasks.app` y el nombre visible es `Mis tareas`.
 
 ## Ejecución local
 
@@ -59,7 +76,7 @@ npm run test:ci
 npm run format:check
 ```
 
-`test:ci` requiere Chrome o Chromium compatible con Karma. La suite actual valida dominio, migración de almacenamiento, repositorios locales, facade de aplicación y componentes base.
+`test:ci` requiere Chrome o Chromium compatible con Karma. La suite actual contiene 25 pruebas y valida dominio, migración de almacenamiento, repositorios locales, facade, búsqueda, fallback de Remote Config y componentes base.
 
 ## Compilación
 
@@ -102,6 +119,8 @@ src/app/application/
 src/app/domain/   Modelos, reglas y contratos de negocio
 src/app/infrastructure/persistence/
                   Persistencia local versionada
+src/app/infrastructure/remote-config/
+                  Firebase Remote Config y fallback offline
 src/app/home/     Pantalla principal de tareas y categorías
 src/app/          Shell y rutas Angular
 src/assets/       Recursos web
@@ -141,7 +160,7 @@ Código, archivos, pruebas y commits en inglés; interfaz, accesibilidad y docum
 
 ## Despliegue
 
-El entregable final será un APK y un IPA firmado. No hay tiendas ni entorno de publicación configurados todavía.
+El entregable final será un APK y un IPA firmado. No hay tiendas ni entorno de publicación configurados todavía. Antes de la entrega debe configurarse el proyecto Firebase personal siguiendo la sección anterior.
 
 ## Licencia
 

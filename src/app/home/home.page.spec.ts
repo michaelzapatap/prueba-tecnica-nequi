@@ -4,6 +4,7 @@ import { CategoryRepository } from '../domain/repositories/category.repository';
 import { CATEGORY_REPOSITORY, TASK_REPOSITORY } from '../domain/repositories/repository.tokens';
 import { TaskRepository } from '../domain/repositories/task.repository';
 import { provideApplicationServices } from '../application/application.providers';
+import { FeatureFlagService } from '../application/feature-flags/feature-flag.service';
 import { HomePage } from './home.page';
 
 const taskRepository: TaskRepository = {
@@ -33,6 +34,10 @@ const categoryRepository: CategoryRepository = {
   deleteById: async () => undefined,
 };
 
+const featureFlagService: FeatureFlagService = {
+  isEnabled: async () => true,
+};
+
 describe('HomePage', () => {
   let component: HomePage;
   let fixture: ComponentFixture<HomePage>;
@@ -43,6 +48,7 @@ describe('HomePage', () => {
       providers: [
         { provide: TASK_REPOSITORY, useValue: taskRepository },
         { provide: CATEGORY_REPOSITORY, useValue: categoryRepository },
+        { provide: FeatureFlagService, useValue: featureFlagService },
         provideApplicationServices(),
       ],
     }).compileComponents();

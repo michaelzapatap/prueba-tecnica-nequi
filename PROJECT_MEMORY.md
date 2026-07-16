@@ -8,7 +8,7 @@ Permitirá crear, completar y eliminar tareas; crear, editar y eliminar categor�
 
 ## Estado actual
 
-La base Ionic/Angular standalone existe. Cordova puede generar y preparar Android 15 e iOS 8.1. El dominio ejecutable, los modelos `Task` y `Category`, los contratos de repositorio, la persistencia local versionada, los casos de uso, el facade de aplicación y la pantalla principal funcional ya están implementados y cubiertos con pruebas unitarias. Firebase Remote Config, optimizaciones de listas grandes, evidencias visuales y binarios finales siguen pendientes.
+La base Ionic/Angular standalone existe. Cordova puede generar y preparar Android 15 e iOS 8.1. El dominio ejecutable, la persistencia local versionada, los casos de uso, el facade de aplicación, la pantalla principal y Firebase Remote Config con búsqueda controlada remotamente ya están implementados y cubiertos con pruebas unitarias. La conexión con un proyecto Firebase personal, las optimizaciones de listas grandes, las evidencias visuales y los binarios finales siguen pendientes.
 
 ## Arquitectura
 
@@ -21,14 +21,14 @@ Arquitectura por capas orientada a funcionalidades:
 - `core`: configuración y servicios transversales singleton.
 - `shared`: piezas reutilizables sin reglas de negocio.
 
-La UI depende de abstracciones mediante inyección de dependencias. Se usan Repository, Use Case, Adapter y Facade. El estado reactivo se expone con Angular Signals en `TaskBoardFacade`.
+La UI depende de abstracciones mediante inyección de dependencias. Se usan Repository, Use Case, Adapter y Facade. El estado reactivo se expone con Angular Signals en `TaskBoardFacade`. La configuración remota se consume mediante `FeatureFlagService`; el SDK de Firebase queda aislado en infraestructura.
 
 ## Tecnologías y dependencias críticas
 
 - Ionic 8, Angular 20 standalone, TypeScript 5.9 estricto y RxJS 7.8.
 - Cordova 13, Cordova Android 15 y Cordova iOS 8.1.
+- Firebase JavaScript SDK 12.16 y Remote Config modular.
 - Jasmine/Karma, ESLint y Prettier.
-- Firebase Remote Config, pendiente de integración.
 
 Cordova está deprecado en Ionic, pero es requisito explícito de la prueba y se mantiene fijado localmente para builds reproducibles.
 
@@ -37,6 +37,7 @@ Cordova está deprecado en Ionic, pero es requisito explícito de la prueba y se
 - `src/app/domain`: modelos, reglas, factories, errores y contratos de repositorio.
 - `src/app/application`: casos de uso, providers y facades de estado.
 - `src/app/infrastructure/persistence`: adaptador de persistencia local versionada.
+- `src/app/infrastructure/remote-config`: adaptador Firebase, cliente, providers y fallback.
 - `src/app/home`: pantalla principal de tareas y categorías.
 - `src/app`: shell y rutas Angular.
 - `src/assets`: recursos web.
@@ -90,11 +91,20 @@ La persistencia local usa un `VersionedLocalStore` sobre la abstracción `KeyVal
 - Se pueden completar y eliminar tareas.
 - Se pueden crear, editar y eliminar categorías.
 - El filtro por categoría permite ver todas las tareas, tareas sin categoría o tareas de una categoría específica.
+- Cuando `task_search_enabled` está activa, el buscador filtra por título dentro del filtro de categoría seleccionado.
 - Los formularios visibles están en español; identificadores, métodos y archivos se mantienen en inglés.
 
 ## Servicios externos y configuración
 
-Firebase Remote Config controlará `task_search_enabled`, con valor predeterminado local y recuperación ante fallos. No se registrarán secretos ni credenciales de firma.
+Firebase Remote Config controla `task_search_enabled` a través de `FeatureFlagService` y `FirebaseFeatureFlagService`.
+
+- El valor local predeterminado es `true`, para conservar la búsqueda cuando no hay red o configuración.
+- El fetch tiene timeout de 3 segundos; el intervalo mínimo es 1 minuto en desarrollo y 12 horas en producción.
+- La carga de tareas y categorías se inicia en paralelo y no depende de la respuesta remota.
+- Si el fetch falla, se utiliza el último valor activado en caché o el default local del SDK.
+- Si Firebase no está configurado, no es soportado o no puede inicializarse, se usa el default local.
+- La configuración pública requerida vive en `src/environments/environment*.ts`: `apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId` y `appId`.
+- Los valores de configuración Firebase para web identifican el proyecto, pero no deben confundirse con credenciales administrativas. Nunca se versionan claves privadas, cuentas de servicio ni credenciales de firma.
 
 - ID nativo: `com.nequitasks.app`.
 - Nombre visible: `Mis tareas`.

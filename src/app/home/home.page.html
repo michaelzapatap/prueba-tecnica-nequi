@@ -79,6 +79,17 @@
           }
         </ion-segment>
 
+        @if (facade.isTaskSearchEnabled()) {
+          <ion-searchbar
+            class="task-search"
+            placeholder="Buscar tareas"
+            aria-label="Buscar tareas"
+            [debounce]="150"
+            [value]="facade.searchQuery()"
+            (ionInput)="onSearchQueryChange($any($event).detail.value)"
+          ></ion-searchbar>
+        }
+
         @if (facade.visibleTasks().length > 0) {
           <ion-list class="task-list">
             @for (task of facade.visibleTasks(); track task.id) {
@@ -120,7 +131,11 @@
         } @else {
           <div class="empty-state">
             <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
-            <p>No hay tareas en esta vista.</p>
+            @if (facade.searchQuery()) {
+              <p>No encontramos tareas con esa búsqueda.</p>
+            } @else {
+              <p>No hay tareas en esta vista.</p>
+            }
           </div>
         }
       </section>
