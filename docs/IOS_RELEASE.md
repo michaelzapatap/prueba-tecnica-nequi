@@ -42,18 +42,22 @@ Los mínimos de Xcode, CocoaPods, `ios-deploy` y Node se basan en la [guía ofic
    ```bash
    git clone https://github.com/michaelzapatap/prueba-tecnica-nequi.git
    cd prueba-tecnica-nequi
+   git fetch origin feature/project-foundation
+   git show origin/feature/project-foundation:tools/verify-ios-release-environment.sh \
+     > /tmp/verify-ios-release-environment.sh
+   chmod 700 /tmp/verify-ios-release-environment.sh
    git checkout v0.1.1
    git status --short
    git rev-parse HEAD
    npm ci
    ```
 
-   El árbol debe quedar limpio. El commit esperado para el tag es `11644a55efce4d7651c035ca46fa6d62b74f51b5`.
+   El árbol debe quedar limpio. El commit esperado para el tag es `11644a55efce4d7651c035ca46fa6d62b74f51b5`. El preflight se añadió después de publicar ese tag inmutable; por eso se extrae a `/tmp` desde la rama y no altera el árbol que produce el IPA.
 
 2. Ejecutar el preflight sin privilegios elevados:
 
    ```bash
-   npm run ios:release:preflight
+   bash /tmp/verify-ios-release-environment.sh
    ```
 
    El script comprueba macOS, Xcode 15+, CocoaPods, `ios-deploy`, Node 22, Cordova local, Bundle ID, identidades de firma y autenticación opcional de GitHub. No imprime contraseñas, perfiles ni llaves. Si Xcode aún no está inicializado, ábralo una vez, instale sus componentes y acepte la licencia.
@@ -73,7 +77,7 @@ Los mínimos de Xcode, CocoaPods, `ios-deploy` y Node se basan en la [guía ofic
 5. Repetir el preflight. Esta vez no debe quedar el aviso de configuración ausente:
 
    ```bash
-   npm run ios:release:preflight
+   bash /tmp/verify-ios-release-environment.sh
    ```
 
 `build.ios.local.json` coincide con `/build.*.local.json` en `.gitignore`. Antes y después del proceso, `git status --short` no debe mostrar material de firma.

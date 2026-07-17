@@ -10,7 +10,7 @@ Se añadieron cuatro capturas finales reproducibles y un preflight macOS para va
 
 ### Changed
 
-La guía iOS ahora separa TestFlight/App Store de distribución `ad-hoc`, incorpora verificación de firma, Bundle ID, entitlements y perfil embebido, y documenta la publicación segura del IPA y su checksum. La instalación Android documenta la incompatibilidad esperada entre firmas debug y release.
+La guía iOS ahora separa TestFlight/App Store de distribución `ad-hoc`, preserva el tag inmutable al ejecutar el preflight desde `/tmp`, incorpora verificación de firma, Bundle ID, entitlements y perfil embebido, y documenta la publicación segura del IPA y su checksum. La instalación Android documenta la incompatibilidad esperada entre firmas debug y release.
 
 ### Security
 
