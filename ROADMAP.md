@@ -43,6 +43,7 @@
 - Captura de evidencias reproducibles y preparación de las respuestas técnicas de la prueba.
 - Publicación del APK firmado en GitHub Releases sin llaves, contraseñas ni cuentas de servicio.
 - Evidencias físicas adicionales de creación/administración de categorías y asignación/filtro de tareas.
+- Descarga, verificación SHA-256/attestation, instalación y smoke completo del APK público exacto `v0.1.1` en el Samsung físico, incluyendo persistencia, offline y limpieza.
 - Auditoría punto por punto contra las tres páginas del PDF y checklist de entrega trazable.
 - GitHub Actions para formato, lint, tipos, auditoría, pruebas, benchmark y build web.
 - Workflow de release Android desde tag con firma efímera, SBOM CycloneDX, checksums y attestations GitHub/Sigstore.
@@ -56,7 +57,7 @@
 ## Pendiente
 
 - Actualizar las dependencias transitivas `uuid` de Cordova/webpack cuando sus proveedores publiquen una corrección compatible.
-- Ejecutar en macOS la generación firmada del IPA y publicar su enlace.
+- Ejecutar en macOS el preflight, definir TestFlight o distribución `ad-hoc` privada, generar el IPA firmado, completar el smoke iOS y publicar el enlace seguro.
 - Asociar el repositorio como fork solo si el evaluador proporciona el upstream original correcto.
 
 ## Backlog

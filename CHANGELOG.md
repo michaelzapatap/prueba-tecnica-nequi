@@ -1,5 +1,32 @@
 # Historial de cambios
 
+## 2026-07-17 17:30
+
+### Added
+
+Smoke final del asset público exacto `nequi-tasks-v0.1.1.apk` en un Samsung Galaxy S21 FE físico. Se verificaron SHA-256 y provenance SLSA antes de instalar, y se cubrieron creación/asignación de categoría, creación/búsqueda/completado/eliminación de tarea, persistencia tras cierre forzado y fallback sin Wi-Fi ni datos.
+
+Se añadieron cuatro capturas finales reproducibles y un preflight macOS para validar Xcode, Node.js 22, Cordova, Bundle ID, identidades de firma y configuración local antes de generar el IPA.
+
+### Changed
+
+La guía iOS ahora separa TestFlight/App Store de distribución `ad-hoc`, incorpora verificación de firma, Bundle ID, entitlements y perfil embebido, y documenta la publicación segura del IPA y su checksum. La instalación Android documenta la incompatibilidad esperada entre firmas debug y release.
+
+### Security
+
+La build debug previa se respaldó temporalmente antes de desinstalarla; el respaldo, APK descargado y capturas intermedias permanecieron fuera de Git y se eliminaron al terminar. La conectividad del dispositivo fue restaurada después del escenario offline. La guía iOS evita publicar un IPA `ad-hoc` que exponga UDID en `embedded.mobileprovision`.
+
+Archivos:
+
+- `evidence/README.md` y `evidence/android/07-*.png` a `10-*.png`
+- `tools/verify-ios-release-environment.sh`, `package.json` y `docs/IOS_RELEASE.md`
+- `DELIVERY_CHECKLIST.md` y `RELEASE_NOTES.md`
+- `PROJECT_MEMORY.md`, `CHANGELOG.md`, `ROADMAP.md` y `README.md`
+
+Motivo:
+
+Validar el mismo binario entregado públicamente bajo condiciones reales, cerrar la evidencia funcional Android y preparar una ejecución iOS segura y guiada en macOS.
+
 ## 2026-07-17 15:45
 
 ### Added

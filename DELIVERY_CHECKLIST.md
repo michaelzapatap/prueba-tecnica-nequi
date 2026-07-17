@@ -9,9 +9,9 @@ Estados: **Cumplido**, **Parcial** o **Pendiente externo**.
 | Requisito del PDF                   | Estado   | Evidencia                                                                                                       |
 | ----------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
 | Agregar tareas                      | Cumplido | `CreateTaskUseCase`, pantalla principal, pruebas de facade/interacción y captura `06-task-category-filter.png`. |
-| Marcar tareas como completadas      | Cumplido | `SetTaskCompletionUseCase`, checkbox accesible y pruebas de interacción.                                        |
-| Eliminar tareas                     | Cumplido | `DeleteTaskUseCase`, acción visual y pruebas de facade.                                                         |
-| Persistencia local                  | Cumplido | `VersionedLocalStore`, repositorios locales, esquema `v1` y pruebas de corrupción/migración/caché.              |
+| Marcar tareas como completadas      | Cumplido | `SetTaskCompletionUseCase`, pruebas y evidencia release `08-release-v0.1.1-persistence.png`.                    |
+| Eliminar tareas                     | Cumplido | `DeleteTaskUseCase`, pruebas y limpieza física visible en `10-release-v0.1.1-delete-cleanup.png`.               |
+| Persistencia local                  | Cumplido | Repositorios/esquema `v1`, pruebas y relanzamiento físico del APK release en evidencia `08`.                    |
 | Crear, editar y eliminar categorías | Cumplido | Casos de uso, UI y captura física `05-category-management.png` con acciones editar/eliminar.                    |
 | Asignar una categoría a cada tarea  | Cumplido | Selector, dominio y captura física `06-task-category-filter.png`.                                               |
 | Filtrar tareas por categoría        | Cumplido | Segmentos dinámicos, consultas puras, pruebas y filtro “TRABAJO” visible en evidencia física.                   |
@@ -31,8 +31,8 @@ Estados: **Cumplido**, **Parcial** o **Pendiente externo**.
 | Optimizar carga inicial              | Cumplido          | Carga local/remota en paralelo, timeout remoto y estado incremental.                                                                |
 | Grandes cantidades de tareas         | Cumplido          | Render por lotes, consultas puras y benchmark de 50.000 tareas.                                                                     |
 | Minimizar memoria                    | Cumplido          | DOM acotado, Signals/OnPush, caché de deserialización e índice de categorías.                                                       |
-| APK exportado                        | Cumplido          | GitHub Release firmada con APK, SBOM, checksums y attestations verificables.                                                        |
-| IPA exportado                        | Pendiente externo | Requiere Mac, Xcode, cuenta/certificados Apple y perfil; procedimiento exacto en `docs/IOS_RELEASE.md`.                             |
+| APK exportado                        | Cumplido          | Asset público `v0.1.1` verificado por SHA-256/attestation, instalado y sometido a smoke físico completo.                            |
+| IPA exportado                        | Pendiente externo | Requiere Mac y credenciales Apple; guía, preflight y rutas seguras TestFlight/`ad-hoc` en `docs/IOS_RELEASE.md`.                    |
 
 ## Entregables
 
@@ -40,7 +40,7 @@ Estados: **Cumplido**, **Parcial** o **Pendiente externo**.
 | ------------------------------------------ | ----------------- | ---------------------------------------------------------------------- |
 | Código fuente actualizado                  | Cumplido          | Repositorio público y tag `v0.1.1`.                                    |
 | README con ejecución y cambios             | Cumplido          | `README.md`, `CHANGELOG.md` y `PROJECT_MEMORY.md`.                     |
-| Capturas o video de funcionalidades nuevas | Cumplido          | `evidence/README.md` y seis capturas del Samsung Galaxy S21 FE físico. |
+| Capturas o video de funcionalidades nuevas | Cumplido          | `evidence/README.md` y diez capturas del Samsung Galaxy S21 FE físico. |
 | Respuestas técnicas                        | Cumplido          | `TECHNICAL_ANSWERS.md`.                                                |
 | Enlace de descarga APK                     | Cumplido          | GitHub Release `v0.1.1`.                                               |
 | Enlace de descarga IPA                     | Pendiente externo | Se añadirá después de ejecutar y validar la guía macOS.                |

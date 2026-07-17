@@ -89,7 +89,7 @@ npm run format:check
 
 `test:ci` requiere Chrome o Chromium compatible con Karma. La suite actual contiene 34 pruebas y valida dominio, migración/caché de almacenamiento, repositorios, facade, búsqueda, Remote Config, lotes grandes e interacciones de pantalla.
 
-Las respuestas solicitadas por la prueba están en [TECHNICAL_ANSWERS.md](TECHNICAL_ANSWERS.md). La matriz y las capturas realizadas en el Samsung físico están en [evidence/README.md](evidence/README.md).
+Las respuestas solicitadas por la prueba están en [TECHNICAL_ANSWERS.md](TECHNICAL_ANSWERS.md). La matriz y las diez capturas realizadas en el Samsung físico están en [evidence/README.md](evidence/README.md), incluido el smoke final del APK público exacto `v0.1.1`.
 
 ### Integración continua
 
@@ -184,6 +184,8 @@ Para verificar una descarga de `v0.1.1`:
 gh release download v0.1.1 --repo michaelzapatap/prueba-tecnica-nequi
 sha256sum --check SHA256SUMS.txt
 gh attestation verify nequi-tasks-v0.1.1.apk --repo michaelzapatap/prueba-tecnica-nequi
+# SHA-256 esperado del APK:
+# 1a3ba55925a3cb112285563b7e44201a488884369d0d1a9503e928a8e33f2559
 ```
 
 Una attestation prueba procedencia e integridad respecto del workflow; no sustituye revisión de código, pruebas ni análisis de vulnerabilidades.
@@ -211,18 +213,20 @@ npm run android:devices
 npm run android:run:device
 ```
 
-Si aparece `unauthorized`, desbloquee el teléfono y acepte nuevamente el diálogo RSA. La instalación, apertura e inspección visual por ADB se verificaron en un Samsung Galaxy S21 FE físico; su disponibilidad posterior depende de que permanezca conectado y autorizado.
+Si aparece `unauthorized`, desbloquee el teléfono y acepte nuevamente el diálogo RSA. El APK público exacto `v0.1.1` se verificó, instaló y probó por ADB en un Samsung Galaxy S21 FE físico. El smoke cubrió tareas, categorías, búsqueda, completado, persistencia, fallback offline y eliminación; las conexiones deshabilitadas para la prueba se restauraron al finalizar.
 
 Una instalación debug y una release usan firmas diferentes. Para instalar el APK release sobre un equipo que tenga la versión debug es necesario desinstalar primero la app, lo cual elimina sus datos locales; respalde las tareas importantes antes de hacerlo.
 
 iOS desde macOS:
 
 ```bash
+npm ci
+npm run ios:release:preflight
 npm run ios:prepare
-npx cordova build ios
+npx cordova build ios --release --buildConfig=build.ios.local.json
 ```
 
-La firma final necesita credenciales del responsable de la entrega. El procedimiento completo para generar, verificar y publicar el IPA está en [docs/IOS_RELEASE.md](docs/IOS_RELEASE.md); `tools/ios-release.build.example.json` es una plantilla sin secretos.
+La firma final necesita credenciales del responsable de la entrega. El procedimiento completo para elegir la distribución, generar, inspeccionar, verificar y publicar el IPA está en [docs/IOS_RELEASE.md](docs/IOS_RELEASE.md); `tools/ios-release.build.example.json` es una plantilla sin secretos. TestFlight es la ruta pública recomendada. Un IPA `ad-hoc` puede incluir UDID en su perfil y debe entregarse por un canal privado.
 
 ## Estructura
 
@@ -282,6 +286,7 @@ Las carpetas `features`, `core` y `shared` se agregarán cuando existan más pan
 | `npm run android:run:device`             | Instalar en dispositivo físico   |
 | `npm run android:run:emulator`           | Instalar en emulador             |
 | `npm run ios:prepare`                    | Preparar iOS                     |
+| `npm run ios:release:preflight`          | Validar el entorno release iOS   |
 
 ## Flujo y convenciones
 
@@ -298,7 +303,7 @@ Código, archivos, pruebas y commits en inglés; interfaz, accesibilidad y docum
 
 La versión Android firmada y sus archivos de cadena de suministro se publican en [GitHub Releases](https://github.com/michaelzapatap/prueba-tecnica-nequi/releases). Las notas versionadas están en [RELEASE_NOTES.md](RELEASE_NOTES.md) y el estado requisito por requisito en [DELIVERY_CHECKLIST.md](DELIVERY_CHECKLIST.md). No se publican la llave, contraseñas, `build.json`, tokens de CLI ni cuentas de servicio.
 
-El IPA firmado sigue pendiente porque requiere macOS/Xcode y credenciales Apple Developer. La guía reproducible está lista, pero no debe declararse cumplido ni publicarse un enlace hasta ejecutar sus verificaciones en un Mac autorizado. No hay publicación en tiendas configurada.
+El IPA firmado sigue pendiente porque requiere macOS/Xcode y credenciales Apple Developer. La guía y el preflight reproducibles están listos, pero no debe declararse cumplido ni publicarse un enlace hasta ejecutar las verificaciones y el smoke en un Mac autorizado. No hay publicación en tiendas configurada.
 
 ## Licencia
 

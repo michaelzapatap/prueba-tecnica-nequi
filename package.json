@@ -28,7 +28,8 @@
     "android:release": "npm run android:signing:setup && npm run android:build:release && npm run android:verify:release",
     "android:run:device": "npm run build && cordova run android --device",
     "android:run:emulator": "npm run build && cordova run android --emulator",
-    "ios:prepare": "npm run build && cordova prepare ios"
+    "ios:prepare": "npm run build && cordova prepare ios",
+    "ios:release:preflight": "bash tools/verify-ios-release-environment.sh"
   },
   "private": true,
   "dependencies": {

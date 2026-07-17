@@ -8,7 +8,7 @@ Permitirá crear, completar y eliminar tareas; crear, editar y eliminar categor�
 
 ## Estado actual
 
-La aplicación funcional incluye dominio, persistencia local versionada, casos de uso, `TaskBoardFacade`, Firebase Remote Config real, búsqueda y optimizaciones para listas grandes. La suite contiene 34 pruebas unitarias/de interacción. Cordova genera Android 15 e iOS 8.1; el entorno Windows actual compila APK debug y release, y la instalación, el arranque y la inspección visual se verificaron en un Samsung Galaxy S21 FE físico con Android 16. GitHub Actions valida cada cambio y construye releases Android firmadas desde tags, con SBOM, checksums y attestations. Las evidencias reproducibles cubren Remote Config, CRUD de categorías y asignación/filtro. Sigue pendiente el IPA firmado, que requiere macOS y credenciales Apple Developer; el repositorio público tampoco figura como fork porque no existe un upstream identificable en la especificación o los remotos.
+La aplicación funcional incluye dominio, persistencia local versionada, casos de uso, `TaskBoardFacade`, Firebase Remote Config real, búsqueda y optimizaciones para listas grandes. La suite contiene 34 pruebas unitarias/de interacción. Cordova genera Android 15 e iOS 8.1; el APK público exacto `v0.1.1` fue descargado, verificado por SHA-256/attestation, instalado y sometido a un smoke completo en un Samsung Galaxy S21 FE físico con Android 16. GitHub Actions valida cada cambio y construye releases Android firmadas desde tags, con SBOM, checksums y attestations. Las evidencias reproducibles cubren Remote Config, tareas, categorías, búsqueda, completado, persistencia, fallback offline y eliminación. Sigue pendiente el IPA firmado, que requiere macOS y credenciales Apple Developer; el repositorio público tampoco figura como fork porque no existe un upstream identificable en la especificación o los remotos.
 
 ## Arquitectura
 
@@ -147,10 +147,12 @@ Firebase Remote Config controla `task_search_enabled` a través de `FeatureFlagS
 - El APK release firmado se genera en `platforms/android/app/build/outputs/apk/release/app-release.apk` y se valida con `apksigner`.
 - El workflow de release reconstruye el APK desde el tag usando cuatro GitHub Secrets, material efímero y permisos mínimos; nunca imprime ni publica la llave o sus contraseñas.
 - Release Android vigente: `v0.1.1`, con APK, `SHA256SUMS.txt`, SBOM CycloneDX y attestations de provenance/SBOM verificables mediante GitHub CLI.
+- El asset público `nequi-tasks-v0.1.1.apk` tiene SHA-256 `1a3ba55925a3cb112285563b7e44201a488884369d0d1a9503e928a8e33f2559`; el smoke físico final cubrió creación/asignación, búsqueda, completado, persistencia, offline y eliminación.
+- Una instalación debug no puede actualizarse directamente con la release porque usa otro certificado. Deben respaldarse los datos relevantes y desinstalar el paquete anterior antes de instalar la release.
 - Las capturas de aceptación se obtienen con ADB en el Samsung físico y se conservan en `evidence/android`; no se registra el serial del dispositivo.
 - La llave generada localmente sirve para la entrega técnica; debe respaldarse de forma segura porque perderla impide actualizar una instalación firmada con ella.
 - Cordova Android 15.0.0, última versión disponible, aún usa APIs Java y construcciones Gradle deprecadas; las advertencias provienen de `CordovaLib`, no del código ni de plugins del proyecto.
-- Un IPA firmado requiere macOS, Xcode, cuenta Apple Developer, certificados y perfiles. El procedimiento seguro y la plantilla no sensible están en `docs/IOS_RELEASE.md` y `tools/ios-release.build.example.json`.
+- Un IPA firmado requiere macOS, Xcode, cuenta Apple Developer, certificados y perfiles. El procedimiento seguro, el preflight y la plantilla no sensible están en `docs/IOS_RELEASE.md`, `tools/verify-ios-release-environment.sh` y `tools/ios-release.build.example.json`. TestFlight es la distribución pública recomendada; un IPA `ad-hoc` con UDID debe entregarse por canal privado.
 
 ## Autenticación y autorización
 
