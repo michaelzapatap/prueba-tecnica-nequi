@@ -13,10 +13,15 @@ if ([string]::IsNullOrWhiteSpace($env:ANDROID_HOME)) {
 }
 
 $buildToolsRoot = Join-Path $env:ANDROID_HOME "build-tools"
+$apkSignerNames = @("apksigner", "apksigner.bat")
 $apkSigner = Get-ChildItem -LiteralPath $buildToolsRoot -Directory |
     Sort-Object { [version]$_.Name } -Descending |
-    ForEach-Object { Join-Path $_.FullName "apksigner.bat" } |
-    Where-Object { Test-Path -LiteralPath $_ } |
+    ForEach-Object {
+        foreach ($apkSignerName in $apkSignerNames) {
+            Join-Path $_.FullName $apkSignerName
+        }
+    } |
+    Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } |
     Select-Object -First 1
 
 if ([string]::IsNullOrWhiteSpace($apkSigner)) {
