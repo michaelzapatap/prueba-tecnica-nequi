@@ -157,13 +157,13 @@ jobs:
       - name: Attest APK build provenance
         uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
         with:
-          subject-path: dist/release/*.apk
+          subject-path: dist/release/nequi-tasks-${{ env.RELEASE_TAG }}.apk
 
       - name: Attest APK SBOM
         uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
         with:
-          subject-path: dist/release/*.apk
-          sbom-path: dist/release/*.sbom.cdx.json
+          subject-path: dist/release/nequi-tasks-${{ env.RELEASE_TAG }}.apk
+          sbom-path: dist/release/nequi-tasks-${{ env.RELEASE_TAG }}.sbom.cdx.json
 
       - name: Upload workflow release artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
