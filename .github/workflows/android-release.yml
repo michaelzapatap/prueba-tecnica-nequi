@@ -88,8 +88,10 @@ jobs:
           echo "ANDROID_SDK_ROOT=$android_sdk_root" >> "$GITHUB_ENV"
           "$sdkmanager_path" 'platforms;android-36' 'build-tools;36.0.0'
 
-      - name: Add Android platform
-        run: npx cordova platform add android@15.0.0
+      - name: Prepare Cordova project and add Android platform
+        run: |
+          npm run build
+          npx cordova platform add android@15.0.0
 
       - name: Configure ephemeral Android signing
         shell: bash
