@@ -37,18 +37,20 @@
 - Eliminación de plugins Cordova obsoletos o no utilizados y adopción del WebView HTTPS incorporado por Cordova.
 - Estrategia segura de firma local con material ignorado por Git, llave PKCS#12/RSA 3072 y verificación mediante `apksigner`.
 - Generación satisfactoria del APK release firmado con APK Signature Scheme v2.
+- Creación del proyecto Firebase `nequi-tasks-mz-20260717` y registro de la aplicación web real.
+- Versionado y publicación de `task_search_enabled` mediante Firebase CLI.
+- Validación física de los estados activado, desactivado y offline en un Samsung Galaxy S21 FE con Android 16.
+- Captura de evidencias reproducibles y preparación de las respuestas técnicas de la prueba.
+- Publicación del APK firmado en GitHub Releases sin llaves, contraseñas ni cuentas de servicio.
 
 ## En progreso
 
-- Sin tareas activas; la siguiente fase prioriza la configuración Firebase real y las evidencias finales.
+- Sin tareas activas.
 
 ## Pendiente
 
-- Registrar la aplicación web en un proyecto Firebase personal, copiar su configuración pública y publicar `task_search_enabled` en Remote Config.
 - Resolver avisos de seguridad de herramientas cuando existan versiones compatibles.
 - Preparar la generación firmada del IPA en macOS.
-- Crear evidencias visuales y respuestas técnicas.
-- Publicar repositorio y enlaces de binarios.
 
 ## Backlog
 

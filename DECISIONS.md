@@ -147,3 +147,27 @@ Usar el WebView HTTPS, splash y comportamiento base incorporados en Cordova 13/A
 Se reduce superficie nativa, deuda de plugins y advertencias accionables. El origen Android cambia del HTTP proporcionado por Ionic WebView al `https://localhost` seguro de Cordova; los datos de prueba almacenados bajo el origen anterior no se migran. La llave local debe respaldarse para publicar actualizaciones. Cordova Android 15.0.0 conserva deprecaciones internas de Java/Gradle que solo podrá resolver una versión upstream; no se modifican ni silencian fuentes generadas.
 
 Estado: Activa
+
+## ADR-007: Plantilla versionada y despliegue autenticado de Remote Config
+
+Fecha: 2026-07-17
+
+### Contexto y problema
+
+La prueba requiere una integración demostrable con un proyecto Firebase real. La bandera debe poder alternarse de forma reproducible sin copiar credenciales administrativas al código ni depender de cambios manuales no auditables en la consola.
+
+### Alternativas
+
+- Configurar y publicar la bandera únicamente desde Firebase Console.
+- Consumir un endpoint propio que replique una feature flag.
+- Versionar la plantilla de Remote Config y desplegarla con Firebase CLI autenticado localmente.
+
+### Decisión y justificación
+
+Usar el proyecto `nequi-tasks-mz-20260717`, centralizar su configuración web pública en `firebase-options.ts` y mantener `firebase/remote-config.template.json` como fuente de verdad. Los scripts del proyecto actualizan exclusivamente `task_search_enabled` y despliegan la plantilla con Firebase CLI. La sesión autenticada vive fuera del repositorio y no se versionan tokens, cuentas de servicio ni claves privadas.
+
+### Consecuencias
+
+Los cambios de la bandera quedan representados por una plantilla revisable y por versiones de Remote Config. Para publicar se requiere Firebase CLI y acceso autorizado al proyecto; ejecutar la app o usar el fallback offline no requiere credenciales administrativas. La configuración web pública queda en Git por ser necesaria en el cliente, pero debe protegerse con reglas y restricciones de API adecuadas si se añaden servicios con datos.
+
+Estado: Activa

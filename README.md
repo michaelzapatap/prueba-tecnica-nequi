@@ -24,6 +24,7 @@ Se usa arquitectura por capas: dominio independiente de Ionic, casos de uso en a
 - Node.js `>=20.17.0` o `>=22.9.0` y npm 10+.
 - Para Android: JDK 17, SDK Platform 36, Build Tools 36.0.0, Command-line Tools, `JAVA_HOME` y `ANDROID_HOME`.
 - Para iOS: macOS, Xcode, Command Line Tools y credenciales Apple Developer.
+- Para publicar Remote Config: Firebase CLI 15 o posterior y una cuenta autorizada en el proyecto.
 
 Windows no puede compilar ni firmar un IPA.
 
@@ -39,24 +40,23 @@ npm ci
 
 ## Configuración y variables de entorno
 
-La configuración está tipada en `src/environments/environment.ts` y `src/environments/environment.prod.ts`. Reemplace los valores vacíos de `firebase` por el objeto público entregado al registrar una aplicación web en Firebase Console:
+La aplicación está conectada al proyecto Firebase `nequi-tasks-mz-20260717`. La configuración web pública se centraliza en `src/environments/firebase-options.ts`; los timeouts, intervalos y defaults tipados permanecen en `environment.ts` y `environment.prod.ts`.
 
-```typescript
-firebase: {
-  apiKey: '...',
-  authDomain: 'your-project.firebaseapp.com',
-  projectId: 'your-project',
-  storageBucket: 'your-project.firebasestorage.app',
-  messagingSenderId: '...',
-  appId: '...',
-}
+La plantilla versionada `firebase/remote-config.template.json` define el booleano `task_search_enabled`. Para consultarlo o publicarlo:
+
+```bash
+npm install --global firebase-tools
+firebase login
+npm run firebase:remote-config:verify
+npm run firebase:remote-config:disable
+npm run firebase:remote-config:enable
 ```
 
-En Firebase Console, abra **Remote Config**, cree el parámetro booleano `task_search_enabled`, defina su valor predeterminado y publique los cambios. Para demostrar la bandera, alterne entre `true` y `false`, publique y vuelva a abrir la aplicación. En desarrollo se permite un fetch por minuto; producción usa el intervalo recomendado de 12 horas.
+El último comando debe ejecutarse al finalizar una demostración para conservar la búsqueda activada. En desarrollo se permite un fetch por minuto; producción usa un intervalo de 12 horas.
 
 El fallback incluido es `true`: la búsqueda permanece disponible si falta configuración, no hay conexión, Remote Config no es soportado o el fetch excede 3 segundos. Si existe un valor activado en caché, Firebase lo conserva y lo usa antes del default local.
 
-El objeto de configuración web identifica el proyecto y no es una cuenta de servicio. Nunca registre claves privadas, certificados ni contraseñas. El ID nativo es `com.nequitasks.app` y el nombre visible es `Mis tareas`.
+El objeto de configuración web identifica el proyecto y no es una cuenta de servicio. Nunca registre tokens de sesión, cuentas de servicio, claves privadas, certificados ni contraseñas. El ID nativo es `com.nequitasks.app` y el nombre visible es `Mis tareas`.
 
 ## Ejecución local
 
@@ -85,6 +85,8 @@ npm run format:check
 ```
 
 `test:ci` requiere Chrome o Chromium compatible con Karma. La suite actual contiene 34 pruebas y valida dominio, migración/caché de almacenamiento, repositorios, facade, búsqueda, Remote Config, lotes grandes e interacciones de pantalla.
+
+Las respuestas solicitadas por la prueba están en [TECHNICAL_ANSWERS.md](TECHNICAL_ANSWERS.md). La matriz y las capturas realizadas en el Samsung físico están en [evidence/README.md](evidence/README.md).
 
 ## Rendimiento reproducible
 
@@ -203,38 +205,43 @@ src/app/          Shell y rutas Angular
 src/assets/       Recursos web
 src/environments/ Configuración por entorno
 src/theme/        Tokens visuales
+firebase/         Plantilla versionada de Remote Config
+evidence/         Protocolo y capturas de validación física
 resources/        Recursos nativos
 config.xml        Configuración Cordova
-tools/            Benchmark y automatización de firma Android
+tools/            Benchmark, Remote Config y firma Android
 ```
 
 Las carpetas `features`, `core` y `shared` se agregarán cuando existan más pantallas o servicios transversales.
 
 ## Scripts
 
-| Script                           | Propósito                        |
-| -------------------------------- | -------------------------------- |
-| `npm start`                      | Servidor local                   |
-| `npm run start:network`          | Servidor visible en la red local |
-| `npm run build`                  | Build web optimizado             |
-| `npm run benchmark`              | Benchmark con 50.000 tareas      |
-| `npm run lint`                   | Análisis estático                |
-| `npm run typecheck`              | Validación TypeScript            |
-| `npm test`                       | Pruebas interactivas             |
-| `npm run test:ci`                | Pruebas con cobertura            |
-| `npm run format`                 | Aplicar formato                  |
-| `npm run format:check`           | Verificar formato                |
-| `npm run cordova:prepare`        | Preparar plataformas             |
-| `npm run android:requirements`   | Verificar toolchain Android      |
-| `npm run android:devices`        | Listar dispositivos Android      |
-| `npm run android:build`          | Construir APK Android            |
-| `npm run android:signing:setup`  | Crear firma release local segura |
-| `npm run android:build:release`  | Construir APK release firmado    |
-| `npm run android:verify:release` | Verificar firma del APK release  |
-| `npm run android:release`        | Firmar, construir y verificar    |
-| `npm run android:run:device`     | Instalar en dispositivo físico   |
-| `npm run android:run:emulator`   | Instalar en emulador             |
-| `npm run ios:prepare`            | Preparar iOS                     |
+| Script                                   | Propósito                        |
+| ---------------------------------------- | -------------------------------- |
+| `npm start`                              | Servidor local                   |
+| `npm run start:network`                  | Servidor visible en la red local |
+| `npm run build`                          | Build web optimizado             |
+| `npm run benchmark`                      | Benchmark con 50.000 tareas      |
+| `npm run lint`                           | Análisis estático                |
+| `npm run typecheck`                      | Validación TypeScript            |
+| `npm test`                               | Pruebas interactivas             |
+| `npm run test:ci`                        | Pruebas con cobertura            |
+| `npm run format`                         | Aplicar formato                  |
+| `npm run format:check`                   | Verificar formato                |
+| `npm run firebase:remote-config:enable`  | Publicar búsqueda activada       |
+| `npm run firebase:remote-config:disable` | Publicar búsqueda desactivada    |
+| `npm run firebase:remote-config:verify`  | Consultar la plantilla remota    |
+| `npm run cordova:prepare`                | Preparar plataformas             |
+| `npm run android:requirements`           | Verificar toolchain Android      |
+| `npm run android:devices`                | Listar dispositivos Android      |
+| `npm run android:build`                  | Construir APK Android            |
+| `npm run android:signing:setup`          | Crear firma release local segura |
+| `npm run android:build:release`          | Construir APK release firmado    |
+| `npm run android:verify:release`         | Verificar firma del APK release  |
+| `npm run android:release`                | Firmar, construir y verificar    |
+| `npm run android:run:device`             | Instalar en dispositivo físico   |
+| `npm run android:run:emulator`           | Instalar en emulador             |
+| `npm run ios:prepare`                    | Preparar iOS                     |
 
 ## Flujo y convenciones
 
@@ -248,7 +255,9 @@ Código, archivos, pruebas y commits en inglés; interfaz, accesibilidad y docum
 
 ## Despliegue
 
-El APK debug puede generarse y ejecutarse, y el APK release local ya fue firmado y verificado. El IPA firmado sigue pendiente porque requiere macOS/Xcode y credenciales Apple Developer. No hay tiendas ni credenciales de publicación configuradas. Antes de la entrega debe configurarse el proyecto Firebase personal siguiendo la sección anterior.
+La versión Android firmada se publica en [GitHub Releases](https://github.com/michaelzapatap/prueba-tecnica-nequi/releases). Las notas versionadas están en [RELEASE_NOTES.md](RELEASE_NOTES.md). No se publican la llave, contraseñas, `build.json`, tokens de CLI ni cuentas de servicio.
+
+El IPA firmado sigue pendiente porque requiere macOS/Xcode y credenciales Apple Developer. No hay publicación en tiendas configurada.
 
 ## Licencia
 

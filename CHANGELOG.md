@@ -1,5 +1,34 @@
 # Historial de cambios
 
+## 2026-07-17 12:45
+
+### Added
+
+Conexión con el proyecto Firebase real `nequi-tasks-mz-20260717`, aplicación web pública y plantilla versionada de Remote Config. Se añadieron comandos reproducibles para publicar y consultar `task_search_enabled`, respuestas técnicas, notas de release y evidencias tomadas en un Samsung Galaxy S21 FE físico con Android 16.
+
+Se validaron las versiones remotas 1 (`true`), 2 (`false`) y 3 (`true`). Las capturas demuestran la aparición y desaparición del buscador, además del fallback offline sobre el valor activado en caché. El estado remoto final quedó activado.
+
+### Security
+
+La sesión autenticada de Firebase, la autenticación de GitHub, las cuentas de servicio, la llave de firma, contraseñas y archivos de build sensibles permanecen fuera de Git. La configuración Firebase versionada contiene únicamente identificadores públicos necesarios para el cliente web.
+
+### Docs
+
+Se prepararon las respuestas a las preguntas exactas de la prueba, el protocolo de evidencia física y las notas de la versión Android. El APK firmado de 2.995.647 bytes y SHA-256 `3E38B6DC0DDA99BF5DD8311BDBC675B8403D9D8B16934D4AD24F5B4938A06E31` se organizó para su publicación como GitHub Release `v0.1.0`.
+
+Archivos:
+
+- `.firebaserc`, `firebase.json` y `firebase/remote-config.template.json`
+- `src/environments/firebase-options.ts` y `src/environments/environment*.ts`
+- `tools/publish-task-search-flag.ps1` y `package.json`
+- `evidence/README.md` y `evidence/android/*`
+- `TECHNICAL_ANSWERS.md` y `RELEASE_NOTES.md`
+- `PROJECT_MEMORY.md`, `CHANGELOG.md`, `ROADMAP.md`, `DECISIONS.md` y `README.md`
+
+Motivo:
+
+Completar la integración externa exigida, demostrar de forma reproducible el comportamiento remoto y offline, y preparar una entrega verificable sin exponer secretos.
+
 ## 2026-07-17 11:30
 
 ### Changed

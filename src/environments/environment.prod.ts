@@ -1,13 +1,8 @@
+import { firebaseOptions } from './firebase-options';
+
 export const environment = {
   production: true,
-  firebase: {
-    apiKey: '',
-    authDomain: '',
-    projectId: '',
-    storageBucket: '',
-    messagingSenderId: '',
-    appId: '',
-  },
+  firebase: firebaseOptions,
   remoteConfig: {
     fetchTimeoutMillis: 3_000,
     minimumFetchIntervalMillis: 43_200_000,
