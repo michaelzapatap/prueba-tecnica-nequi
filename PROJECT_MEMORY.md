@@ -8,7 +8,7 @@ Permitirá crear, completar y eliminar tareas; crear, editar y eliminar categor�
 
 ## Estado actual
 
-La aplicación funcional incluye dominio, persistencia local versionada, casos de uso, `TaskBoardFacade`, Firebase Remote Config, búsqueda y optimizaciones para listas grandes. La suite contiene 34 pruebas unitarias/de interacción. Cordova genera Android 15 e iOS 8.1; el entorno Windows actual ya compila un APK Android de depuración, dispone del emulador `Nequi_API_34` y verificó instalación/arranque en un dispositivo Android físico. Siguen pendientes la conexión con un proyecto Firebase personal, el endurecimiento de plugins/splash, las evidencias finales y los binarios firmados.
+La aplicación funcional incluye dominio, persistencia local versionada, casos de uso, `TaskBoardFacade`, Firebase Remote Config, búsqueda y optimizaciones para listas grandes. La suite contiene 34 pruebas unitarias/de interacción. Cordova genera Android 15 e iOS 8.1; el entorno Windows actual compila APK debug y release, y la instalación, el arranque y la inspección visual se verificaron en un Samsung Galaxy S21 FE físico. El APK release local está firmado y validado. Siguen pendientes la conexión con un proyecto Firebase personal, las evidencias finales y el IPA firmado.
 
 ## Arquitectura
 
@@ -44,12 +44,12 @@ Cordova está deprecado en Ionic, pero es requisito explícito de la prueba y se
 - `src/assets`: recursos web.
 - `src/environments`: configuración pública por entorno.
 - `src/theme`: tokens visuales.
-- `resources`: iconos y splash nativos.
+- `resources`: iconos adaptativos, monocromáticos, fallbacks y splash nativos.
 - `config.xml`: configuración Cordova.
-- `tools`: benchmarks reproducibles que consumen el código real de aplicación.
+- `tools`: benchmark reproducible y automatización de firma/verificación Android.
 - PDF de la prueba: especificación original.
 
-No se versionan `node_modules`, `www`, `platforms`, `plugins`, `coverage` ni `tmp`.
+No se versionan `node_modules`, `www`, `platforms`, `plugins`, `coverage`, `tmp`, `.local-signing` ni `build.json`.
 
 ## Convenciones
 
@@ -126,6 +126,13 @@ Firebase Remote Config controla `task_search_enabled` a través de `FeatureFlagS
 - Android compila en Windows con JDK 17, Android SDK Platform 36 y Build Tools 36.0.0.
 - El entorno actual usa Temurin 17.0.19, `ANDROID_HOME=%LOCALAPPDATA%\Android\Sdk` y el AVD `Nequi_API_34`.
 - El APK de depuración se genera en `platforms/android/app/build/outputs/apk/debug/app-debug.apk`; `platforms` no se versiona.
+- Android usa el origen local seguro `https://localhost` provisto por `WebViewAssetLoader`; no se permite tráfico HTTP local explícitamente.
+- Cordova core provee WebView, splash, teclado básico y barras del sistema; no hay plugins Cordova instalados porque la aplicación no consume APIs nativas adicionales.
+- Android usa splash vectorial moderno e iconos adaptativos con capa monocromática; los PNG por densidad son fallback para API 24 y 25.
+- La firma release local usa PKCS#12, RSA de 3072 bits y APK Signature Scheme v2. `.local-signing` y `build.json` contienen material sensible local y nunca se versionan.
+- El APK release firmado se genera en `platforms/android/app/build/outputs/apk/release/app-release.apk` y se valida con `apksigner`.
+- La llave generada localmente sirve para la entrega técnica; debe respaldarse de forma segura porque perderla impide actualizar una instalación firmada con ella.
+- Cordova Android 15.0.0, última versión disponible, aún usa APIs Java y construcciones Gradle deprecadas; las advertencias provienen de `CordovaLib`, no del código ni de plugins del proyecto.
 - Un IPA firmado requiere macOS, Xcode, cuenta Apple Developer, certificados y perfiles.
 
 ## Autenticación y autorización

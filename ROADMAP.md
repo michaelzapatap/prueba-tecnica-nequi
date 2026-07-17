@@ -30,19 +30,23 @@
 - Benchmark reproducible sobre 50.000 tareas mediante `npm run benchmark`.
 - Ampliación a 34 pruebas, incluidas interacciones de pantalla y listas grandes.
 - Instalación de JDK 17 y configuración persistente de `JAVA_HOME`, `CORDOVA_JAVA_HOME`, `ANDROID_HOME` y herramientas Android en `PATH`.
-- Creación del emulador `Nequi_API_34`, compilación del APK debug e instalación/arranque verificados tanto en emulador como en dispositivo Android físico.
-- Verificación visual en emulador y corrección del contraste forzando la paleta clara soportada actualmente.
+- Creación del AVD `Nequi_API_34` como opción local de pruebas.
+- Compilación del APK debug e instalación, arranque e inspección visual verificados en un Samsung Galaxy S21 FE físico.
+- Corrección del contraste detectado en el dispositivo físico, forzando la paleta clara soportada actualmente.
+- Migración al splash screen vectorial de Cordova Android 15 y a iconos adaptativos con variante monocromática.
+- Eliminación de plugins Cordova obsoletos o no utilizados y adopción del WebView HTTPS incorporado por Cordova.
+- Estrategia segura de firma local con material ignorado por Git, llave PKCS#12/RSA 3072 y verificación mediante `apksigner`.
+- Generación satisfactoria del APK release firmado con APK Signature Scheme v2.
 
 ## En progreso
 
-- Sin tareas activas; la siguiente fase prioriza configuración Firebase real y endurecimiento Cordova.
+- Sin tareas activas; la siguiente fase prioriza la configuración Firebase real y las evidencias finales.
 
 ## Pendiente
 
 - Registrar la aplicación web en un proyecto Firebase personal, copiar su configuración pública y publicar `task_search_enabled` en Remote Config.
-- Revisar los plugins Cordova heredados y la configuración de splash screen.
 - Resolver avisos de seguridad de herramientas cuando existan versiones compatibles.
-- Generar APK de release firmado y preparar la generación firmada del IPA.
+- Preparar la generación firmada del IPA en macOS.
 - Crear evidencias visuales y respuestas técnicas.
 - Publicar repositorio y enlaces de binarios.
 
@@ -55,7 +59,7 @@
 
 ## Mejoras futuras
 
-- Pruebas end-to-end en dispositivos reales.
+- Automatizar pruebas end-to-end en dispositivos reales.
 - CI para calidad y builds.
 - Runner macOS para el IPA firmado.
 - Telemetría de rendimiento respetuosa de la privacidad.

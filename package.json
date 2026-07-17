@@ -19,6 +19,10 @@
     "android:requirements": "cordova requirements android",
     "android:devices": "adb devices -l",
     "android:build": "npm run build && cordova build android",
+    "android:signing:setup": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/setup-android-release-signing.ps1",
+    "android:build:release": "npm run build && cordova build android --release -- --packageType=apk",
+    "android:verify:release": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/verify-android-release.ps1",
+    "android:release": "npm run android:signing:setup && npm run android:build:release && npm run android:verify:release",
     "android:run:device": "npm run build && cordova run android --device",
     "android:run:emulator": "npm run build && cordova run android --emulator",
     "ios:prepare": "npm run build && cordova prepare ios"
@@ -57,11 +61,6 @@
     "cordova": "^13.0.0",
     "cordova-android": "^15.0.0",
     "cordova-ios": "^8.1.1",
-    "cordova-plugin-device": "2.0.2",
-    "cordova-plugin-ionic-keyboard": "^2.0.5",
-    "cordova-plugin-ionic-webview": "^5.0.0",
-    "cordova-plugin-splashscreen": "5.0.2",
-    "cordova-plugin-statusbar": "^2.4.2",
     "eslint": "^9.16.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsdoc": "^48.2.1",
@@ -79,13 +78,7 @@
   },
   "description": "Aplicación móvil de gestión de tareas y categorías para la prueba técnica de Nequi.",
   "cordova": {
-    "plugins": {
-      "cordova-plugin-statusbar": {},
-      "cordova-plugin-device": {},
-      "cordova-plugin-splashscreen": {},
-      "cordova-plugin-ionic-webview": {},
-      "cordova-plugin-ionic-keyboard": {}
-    },
+    "plugins": {},
     "platforms": [
       "android",
       "ios"

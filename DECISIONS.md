@@ -121,3 +121,29 @@ Mantener la colección completa en Signals y renderizar lotes de 30 con una acci
 El DOM queda acotado al lote solicitado y las mutaciones comunes evitan lecturas completas. La búsqueda sigue recorriendo la colección local, pero el benchmark con 50.000 tareas permite detectar regresiones. Para volúmenes que excedan el alcance de `localStorage`, deberá reemplazarse el adaptador por IndexedDB/SQLite y añadir paginación de repositorio.
 
 Estado: Activa
+
+## ADR-006: Runtime Cordova sin plugins y firma Android local aislada
+
+Fecha: 2026-07-17
+
+### Contexto y problema
+
+La configuración inicial dependía de plugins heredados para splash, status bar, dispositivo, teclado y WebView, aunque la aplicación no invoca sus APIs. Android 12+ exige la SplashScreen API, Android 13 admite iconos temáticos y la entrega requiere un APK release sin exponer credenciales.
+
+### Alternativas
+
+- Mantener o actualizar todos los plugins heredados.
+- Migrar a Capacitor y apartarse del requisito Cordova.
+- Usar las capacidades incorporadas de Cordova Android/iOS y retirar plugins no utilizados.
+- Versionar una llave de evaluación o pasar contraseñas en comandos manuales.
+- Generar localmente una llave persistente y excluir todo material sensible.
+
+### Decisión y justificación
+
+Usar el WebView HTTPS, splash y comportamiento base incorporados en Cordova 13/Android 15/iOS 8.1, sin plugins nativos mientras no exista un caso de uso que los requiera. Android usa recursos vectoriales adaptativos y monocromáticos. La firma local se automatiza con una llave PKCS#12 RSA 3072 y un `build.json` generado; ambos se excluyen de Git y el APK se verifica con `apksigner`.
+
+### Consecuencias
+
+Se reduce superficie nativa, deuda de plugins y advertencias accionables. El origen Android cambia del HTTP proporcionado por Ionic WebView al `https://localhost` seguro de Cordova; los datos de prueba almacenados bajo el origen anterior no se migran. La llave local debe respaldarse para publicar actualizaciones. Cordova Android 15.0.0 conserva deprecaciones internas de Java/Gradle que solo podrá resolver una versión upstream; no se modifican ni silencian fuentes generadas.
+
+Estado: Activa

@@ -23,6 +23,13 @@ log.txt
 /platforms
 /plugins
 
+# Local Android signing material
+/.local-signing/
+/build.json
+*.jks
+*.keystore
+*.p12
+
 # Compiled output
 /dist
 /tmp

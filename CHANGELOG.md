@@ -1,5 +1,32 @@
 # Historial de cambios
 
+## 2026-07-17 11:30
+
+### Changed
+
+Modernización de la plataforma móvil: migración de Android al splash screen vectorial incorporado por Cordova 15, iconos adaptativos con variante monocromática, origen local HTTPS y paleta nativa clara. Se eliminaron los recursos Android heredados y los plugins `splashscreen`, `statusbar`, `device`, `ionic-keyboard` e `ionic-webview`, cuyas APIs no eran utilizadas por la aplicación.
+
+Se corrigió la evidencia de ejecución: la instalación, el arranque, la inspección visual y la detección del contraste oscuro se realizaron en un Samsung Galaxy S21 FE físico; el AVD quedó solamente como opción configurada.
+
+### Security
+
+Automatización de firma Android release con llave PKCS#12 RSA de 3072 bits, contraseña aleatoria, material sensible excluido de Git y validación con `apksigner`. Se generó un APK release de 2.995.527 bytes, firmado mediante APK Signature Scheme v2.
+
+Archivos:
+
+- `config.xml`
+- `package.json` y `package-lock.json`
+- `.gitignore`
+- `resources/android/*` y `resources/README.md`
+- `tools/setup-android-release-signing.ps1`
+- `tools/verify-android-release.ps1`
+- `src/index.html`
+- `PROJECT_MEMORY.md`, `CHANGELOG.md`, `ROADMAP.md`, `DECISIONS.md` y `README.md`
+
+Motivo:
+
+Eliminar configuración móvil obsoleta, reducir la superficie nativa, adoptar APIs actuales de Android y producir un binario release verificable sin exponer secretos de firma.
+
 ## 2026-07-15 22:10
 
 ### Added
@@ -90,7 +117,7 @@ Permitir que Firebase active o desactive una mejora visible sin comprometer el a
 
 Optimización de listas grandes mediante caché de deserialización, actualizaciones incrementales de Signals, contadores en una pasada, categorías indexadas, `OnPush` y renderizado en lotes de 30. Se añadió un benchmark reproducible de 50.000 tareas y pruebas de interacción que elevaron la suite a 34 casos.
 
-También se habilitó el entorno Android: instalación de JDK 17, configuración de SDK/variables, creación del AVD `Nequi_API_34`, compilación del APK debug e instalación verificada en emulador y dispositivo físico. Una inspección visual detectó y corrigió el contraste inconsistente bajo modo oscuro.
+También se habilitó el entorno Android: instalación de JDK 17, configuración de SDK/variables, creación del AVD opcional `Nequi_API_34`, compilación del APK debug e instalación verificada en un dispositivo físico. La inspección visual en ese dispositivo detectó y corrigió el contraste inconsistente bajo modo oscuro.
 
 Archivos:
 

@@ -27,7 +27,7 @@ Se usa arquitectura por capas: dominio independiente de Ionic, casos de uso en a
 
 Windows no puede compilar ni firmar un IPA.
 
-El entorno de desarrollo actual ya tiene Temurin 17.0.19, Android Studio, SDK 36, Build Tools 36.0.0 y el AVD `Nequi_API_34`. Las variables se guardaron para el usuario de Windows; abra una terminal nueva para heredarlas.
+El entorno de desarrollo actual ya tiene Temurin 17.0.19, Android Studio, SDK 36, Build Tools 36.0.0 y el AVD opcional `Nequi_API_34`. Las variables se guardaron para el usuario de Windows; abra una terminal nueva para heredarlas. La validación funcional y visual realizada hasta ahora corresponde a un Samsung Galaxy S21 FE físico, no al emulador.
 
 ## Instalación
 
@@ -124,6 +124,34 @@ El APK debug queda en:
 platforms/android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
+### Generar y verificar un APK release firmado
+
+Para una entrega técnica local reproducible:
+
+```bash
+npm run android:release
+```
+
+La primera ejecución crea una llave PKCS#12 RSA de 3072 bits con contraseña aleatoria dentro de `.local-signing/`, genera el `build.json` local, construye el APK release y valida su firma con `apksigner`. Estos archivos sensibles están ignorados por Git. No copie sus valores a commits, logs, tickets ni documentación.
+
+El APK firmado queda en:
+
+```text
+platforms/android/app/build/outputs/apk/release/app-release.apk
+```
+
+También puede ejecutar las fases por separado:
+
+```bash
+npm run android:signing:setup
+npm run android:build:release
+npm run android:verify:release
+```
+
+Respalde la llave en un almacén seguro: sin la misma llave no podrá publicar una actualización sobre una instalación existente. En CI o producción, aprovisione una llave institucional desde el gestor de secretos y genere `build.json` solo durante el job. La llave local creada por el script es adecuada para esta entrega técnica, no sustituye una política organizacional de custodia y rotación.
+
+Cordova Android 15.0.0 todavía emite avisos de deprecación desde `CordovaLib` y sus scripts Gradle. Es la última versión publicada; el proyecto no los silencia ni modifica código generado. La advertencia heredada de `<splash>` y las originadas por plugins antiguos sí fueron eliminadas.
+
 ### Probar en emulador Android
 
 ```bash
@@ -145,7 +173,9 @@ npm run android:devices
 npm run android:run:device
 ```
 
-Si aparece `unauthorized`, desbloquee el teléfono y acepte nuevamente el diálogo RSA. La instalación y apertura por ADB se verificaron en un dispositivo Android físico; su disponibilidad posterior depende de que permanezca conectado y autorizado.
+Si aparece `unauthorized`, desbloquee el teléfono y acepte nuevamente el diálogo RSA. La instalación, apertura e inspección visual por ADB se verificaron en un Samsung Galaxy S21 FE físico; su disponibilidad posterior depende de que permanezca conectado y autorizado.
+
+Una instalación debug y una release usan firmas diferentes. Para instalar el APK release sobre un equipo que tenga la versión debug es necesario desinstalar primero la app, lo cual elimina sus datos locales; respalde las tareas importantes antes de hacerlo.
 
 iOS desde macOS:
 
@@ -175,32 +205,36 @@ src/environments/ Configuración por entorno
 src/theme/        Tokens visuales
 resources/        Recursos nativos
 config.xml        Configuración Cordova
-tools/            Benchmarks reproducibles
+tools/            Benchmark y automatización de firma Android
 ```
 
 Las carpetas `features`, `core` y `shared` se agregarán cuando existan más pantallas o servicios transversales.
 
 ## Scripts
 
-| Script                         | Propósito                        |
-| ------------------------------ | -------------------------------- |
-| `npm start`                    | Servidor local                   |
-| `npm run start:network`        | Servidor visible en la red local |
-| `npm run build`                | Build web optimizado             |
-| `npm run benchmark`            | Benchmark con 50.000 tareas      |
-| `npm run lint`                 | Análisis estático                |
-| `npm run typecheck`            | Validación TypeScript            |
-| `npm test`                     | Pruebas interactivas             |
-| `npm run test:ci`              | Pruebas con cobertura            |
-| `npm run format`               | Aplicar formato                  |
-| `npm run format:check`         | Verificar formato                |
-| `npm run cordova:prepare`      | Preparar plataformas             |
-| `npm run android:requirements` | Verificar toolchain Android      |
-| `npm run android:devices`      | Listar dispositivos Android      |
-| `npm run android:build`        | Construir APK Android            |
-| `npm run android:run:device`   | Instalar en dispositivo físico   |
-| `npm run android:run:emulator` | Instalar en emulador             |
-| `npm run ios:prepare`          | Preparar iOS                     |
+| Script                           | Propósito                        |
+| -------------------------------- | -------------------------------- |
+| `npm start`                      | Servidor local                   |
+| `npm run start:network`          | Servidor visible en la red local |
+| `npm run build`                  | Build web optimizado             |
+| `npm run benchmark`              | Benchmark con 50.000 tareas      |
+| `npm run lint`                   | Análisis estático                |
+| `npm run typecheck`              | Validación TypeScript            |
+| `npm test`                       | Pruebas interactivas             |
+| `npm run test:ci`                | Pruebas con cobertura            |
+| `npm run format`                 | Aplicar formato                  |
+| `npm run format:check`           | Verificar formato                |
+| `npm run cordova:prepare`        | Preparar plataformas             |
+| `npm run android:requirements`   | Verificar toolchain Android      |
+| `npm run android:devices`        | Listar dispositivos Android      |
+| `npm run android:build`          | Construir APK Android            |
+| `npm run android:signing:setup`  | Crear firma release local segura |
+| `npm run android:build:release`  | Construir APK release firmado    |
+| `npm run android:verify:release` | Verificar firma del APK release  |
+| `npm run android:release`        | Firmar, construir y verificar    |
+| `npm run android:run:device`     | Instalar en dispositivo físico   |
+| `npm run android:run:emulator`   | Instalar en emulador             |
+| `npm run ios:prepare`            | Preparar iOS                     |
 
 ## Flujo y convenciones
 
@@ -214,7 +248,7 @@ Código, archivos, pruebas y commits en inglés; interfaz, accesibilidad y docum
 
 ## Despliegue
 
-El APK debug ya puede generarse y ejecutarse. El entregable final será un APK de release y un IPA firmados; no hay tiendas ni credenciales de publicación configuradas. Antes de la entrega debe configurarse el proyecto Firebase personal siguiendo la sección anterior.
+El APK debug puede generarse y ejecutarse, y el APK release local ya fue firmado y verificado. El IPA firmado sigue pendiente porque requiere macOS/Xcode y credenciales Apple Developer. No hay tiendas ni credenciales de publicación configuradas. Antes de la entrega debe configurarse el proyecto Firebase personal siguiendo la sección anterior.
 
 ## Licencia
 
