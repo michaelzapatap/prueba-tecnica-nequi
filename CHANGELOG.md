@@ -18,6 +18,8 @@ Se actualizaron Angular CLI/build a `20.3.32` y el framework a `20.3.26`, elimin
 
 Versión alineada a `0.1.1` en npm y Cordova. Las notas de release y respuestas técnicas incorporan CI y cadena de suministro verificable.
 
+El workflow Android resuelve `sdkmanager` desde `ANDROID_SDK_ROOT`/`ANDROID_HOME` y valida su ejecutable, compatible con la distribución de herramientas de los runners hospedados de GitHub.
+
 Archivos:
 
 - `.github/workflows/ci.yml` y `.github/workflows/android-release.yml`
