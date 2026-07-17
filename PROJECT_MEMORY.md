@@ -8,7 +8,7 @@ Permitirá crear, completar y eliminar tareas; crear, editar y eliminar categor�
 
 ## Estado actual
 
-La aplicación funcional incluye dominio, persistencia local versionada, casos de uso, `TaskBoardFacade`, Firebase Remote Config real, búsqueda y optimizaciones para listas grandes. La suite contiene 34 pruebas unitarias/de interacción. Cordova genera Android 15 e iOS 8.1; el entorno Windows actual compila APK debug y release, y la instalación, el arranque y la inspección visual se verificaron en un Samsung Galaxy S21 FE físico con Android 16. El APK release está firmado, validado y se distribuye mediante GitHub Releases. Las evidencias reproducibles incluyen los estados remoto activado, desactivado y fallback offline. Sigue pendiente únicamente el IPA firmado, que requiere macOS y credenciales Apple Developer.
+La aplicación funcional incluye dominio, persistencia local versionada, casos de uso, `TaskBoardFacade`, Firebase Remote Config real, búsqueda y optimizaciones para listas grandes. La suite contiene 34 pruebas unitarias/de interacción. Cordova genera Android 15 e iOS 8.1; el entorno Windows actual compila APK debug y release, y la instalación, el arranque y la inspección visual se verificaron en un Samsung Galaxy S21 FE físico con Android 16. GitHub Actions valida cada cambio y construye releases Android firmadas desde tags, con SBOM, checksums y attestations. Las evidencias reproducibles cubren Remote Config, CRUD de categorías y asignación/filtro. Sigue pendiente el IPA firmado, que requiere macOS y credenciales Apple Developer; el repositorio público tampoco figura como fork porque no existe un upstream identificable en la especificación o los remotos.
 
 ## Arquitectura
 
@@ -25,12 +25,15 @@ La UI depende de abstracciones mediante inyección de dependencias. Se usan Repo
 
 ## Tecnologías y dependencias críticas
 
-- Ionic 8, Angular 20 standalone, TypeScript 5.9 estricto y RxJS 7.8.
+- Ionic 8, Angular 20.3.26 standalone, Angular CLI/build 20.3.32, TypeScript 5.9 estricto y RxJS 7.8.
 - Cordova 13, Cordova Android 15 y Cordova iOS 8.1.
 - Firebase JavaScript SDK 12.16 y Remote Config modular.
 - Jasmine/Karma, ESLint, Prettier y `tsx` 4.23 para benchmarks.
+- GitHub Actions con acciones oficiales fijadas por SHA, SBOM CycloneDX de npm y artifact attestations GitHub/Sigstore.
 
 Cordova está deprecado en Ionic, pero es requisito explícito de la prueba y se mantiene fijado localmente para builds reproducibles.
+
+La auditoría npm de producción no reporta vulnerabilidades. La auditoría completa conserva avisos moderados transitivos de `uuid` en herramientas Cordova/webpack sin corrección compatible; no se usa `npm audit fix --force` porque propone cambios regresivos o fuera de rango.
 
 ## Repositorio
 
@@ -46,6 +49,9 @@ Cordova está deprecado en Ionic, pero es requisito explícito de la prueba y se
 - `src/theme`: tokens visuales.
 - `firebase`: plantilla versionada de Remote Config.
 - `evidence/android`: capturas y protocolo reproducible de validación física.
+- `.github/workflows`: CI continua y release Android firmada/atestada.
+- `docs`: procedimiento de firma y exportación iOS en macOS.
+- `DELIVERY_CHECKLIST.md`: matriz auditable contra el PDF.
 - `resources`: iconos adaptativos, monocromáticos, fallbacks y splash nativos.
 - `config.xml`: configuración Cordova.
 - `tools`: benchmark reproducible y automatización de Remote Config y firma/verificación Android.
@@ -61,6 +67,7 @@ No se versionan `node_modules`, `www`, `platforms`, `plugins`, `coverage`, `tmp`
 - Componentes sin reglas de negocio ni acceso directo a almacenamiento/Firebase.
 - Inmutabilidad, funciones pequeñas e inyección de dependencias.
 - Commits Conventional Commits en inglés y ramas `feature/`, `fix/`, `refactor/` o `docs/`.
+- Tags de entrega `vMAJOR.MINOR.PATCH`; la versión debe coincidir en `package.json` y `config.xml`.
 - Cada commit debe ser cohesivo, compilable y no contener secretos.
 
 ## Modelos y reglas estables
@@ -138,11 +145,12 @@ Firebase Remote Config controla `task_search_enabled` a través de `FeatureFlagS
 - Android usa splash vectorial moderno e iconos adaptativos con capa monocromática; los PNG por densidad son fallback para API 24 y 25.
 - La firma release local usa PKCS#12, RSA de 3072 bits y APK Signature Scheme v2. `.local-signing` y `build.json` contienen material sensible local y nunca se versionan.
 - El APK release firmado se genera en `platforms/android/app/build/outputs/apk/release/app-release.apk` y se valida con `apksigner`.
-- Release Android `v0.1.0`: asset `nequi-tasks-v0.1.0.apk`, 2.995.647 bytes y SHA-256 `3E38B6DC0DDA99BF5DD8311BDBC675B8403D9D8B16934D4AD24F5B4938A06E31`.
+- El workflow de release reconstruye el APK desde el tag usando cuatro GitHub Secrets, material efímero y permisos mínimos; nunca imprime ni publica la llave o sus contraseñas.
+- Release Android vigente: `v0.1.1`, con APK, `SHA256SUMS.txt`, SBOM CycloneDX y attestations de provenance/SBOM verificables mediante GitHub CLI.
 - Las capturas de aceptación se obtienen con ADB en el Samsung físico y se conservan en `evidence/android`; no se registra el serial del dispositivo.
 - La llave generada localmente sirve para la entrega técnica; debe respaldarse de forma segura porque perderla impide actualizar una instalación firmada con ella.
 - Cordova Android 15.0.0, última versión disponible, aún usa APIs Java y construcciones Gradle deprecadas; las advertencias provienen de `CordovaLib`, no del código ni de plugins del proyecto.
-- Un IPA firmado requiere macOS, Xcode, cuenta Apple Developer, certificados y perfiles.
+- Un IPA firmado requiere macOS, Xcode, cuenta Apple Developer, certificados y perfiles. El procedimiento seguro y la plantilla no sensible están en `docs/IOS_RELEASE.md` y `tools/ios-release.build.example.json`.
 
 ## Autenticación y autorización
 

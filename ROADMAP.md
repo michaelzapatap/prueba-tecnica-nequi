@@ -42,6 +42,12 @@
 - Validación física de los estados activado, desactivado y offline en un Samsung Galaxy S21 FE con Android 16.
 - Captura de evidencias reproducibles y preparación de las respuestas técnicas de la prueba.
 - Publicación del APK firmado en GitHub Releases sin llaves, contraseñas ni cuentas de servicio.
+- Evidencias físicas adicionales de creación/administración de categorías y asignación/filtro de tareas.
+- Auditoría punto por punto contra las tres páginas del PDF y checklist de entrega trazable.
+- GitHub Actions para formato, lint, tipos, auditoría, pruebas, benchmark y build web.
+- Workflow de release Android desde tag con firma efímera, SBOM CycloneDX, checksums y attestations GitHub/Sigstore.
+- Guía y plantilla segura para generar, verificar y publicar el IPA desde macOS.
+- Actualización de seguridad compatible de Angular; auditoría de producción sin vulnerabilidades y eliminación de avisos altos del toolchain.
 
 ## En progreso
 
@@ -49,8 +55,9 @@
 
 ## Pendiente
 
-- Resolver avisos de seguridad de herramientas cuando existan versiones compatibles.
-- Preparar la generación firmada del IPA en macOS.
+- Actualizar las dependencias transitivas `uuid` de Cordova/webpack cuando sus proveedores publiquen una corrección compatible.
+- Ejecutar en macOS la generación firmada del IPA y publicar su enlace.
+- Asociar el repositorio como fork solo si el evaluador proporciona el upstream original correcto.
 
 ## Backlog
 
@@ -62,6 +69,5 @@
 ## Mejoras futuras
 
 - Automatizar pruebas end-to-end en dispositivos reales.
-- CI para calidad y builds.
 - Runner macOS para el IPA firmado.
 - Telemetría de rendimiento respetuosa de la privacidad.

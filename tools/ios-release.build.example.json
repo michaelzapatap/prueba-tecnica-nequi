@@ -1,0 +1,10 @@
+{
+  "ios": {
+    "release": {
+      "codeSignIdentity": "iPhone Developer",
+      "developmentTeam": "REPLACE_WITH_APPLE_TEAM_ID",
+      "packageType": "ad-hoc",
+      "automaticProvisioning": true
+    }
+  }
+}

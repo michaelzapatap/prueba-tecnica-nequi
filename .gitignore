@@ -26,6 +26,7 @@ log.txt
 # Local Android signing material
 /.local-signing/
 /build.json
+/build.*.local.json
 *.jks
 *.keystore
 *.p12

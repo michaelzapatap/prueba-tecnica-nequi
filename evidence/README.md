@@ -35,3 +35,12 @@ Versiones publicadas el 17 de julio de 2026 a las 12:23, 12:30 y 12:32, hora de 
 9. Confirmar el estado final con `npm run firebase:remote-config:verify`.
 
 La build release usa un intervalo de 12 horas para evitar fetches innecesarios. El intervalo corto se reserva para validación controlada.
+
+## Categorías y tareas
+
+| Caso                              | Resultado observado                                                                        | Evidencia                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| Crear y administrar una categoría | “Trabajo” aparece con color y acciones de edición/eliminación                              | [05-category-management.png](android/05-category-management.png)   |
+| Asignar y filtrar por categoría   | La tarea “Preparar entrega final” muestra “Trabajo” y el segmento dinámico correspondiente | [06-task-category-filter.png](android/06-task-category-filter.png) |
+
+Estas acciones se ejecutaron sobre la build debug instalada en el Samsung físico. Para hacer la interacción repetible sin depender de coordenadas frágiles del WebView, se enviaron al formulario los mismos eventos DOM que emiten los controles Ionic; la creación siguió los casos de uso y repositorios reales de la aplicación. Las capturas se obtuvieron posteriormente con ADB. El dispositivo conserva estos datos únicamente en su almacenamiento local.

@@ -171,3 +171,27 @@ Usar el proyecto `nequi-tasks-mz-20260717`, centralizar su configuración web p�
 Los cambios de la bandera quedan representados por una plantilla revisable y por versiones de Remote Config. Para publicar se requiere Firebase CLI y acceso autorizado al proyecto; ejecutar la app o usar el fallback offline no requiere credenciales administrativas. La configuración web pública queda en Git por ser necesaria en el cliente, pero debe protegerse con reglas y restricciones de API adecuadas si se añaden servicios con datos.
 
 Estado: Activa
+
+## ADR-008: CI con permisos mínimos y release Android atestada
+
+Fecha: 2026-07-17
+
+### Contexto y problema
+
+La entrega necesita controles repetibles y un APK cuya procedencia, dependencias e integridad puedan verificarse sin versionar la llave de firma. Un build local firmado prueba funcionalidad, pero no ofrece por sí solo provenance vinculada a un commit o SBOM verificable.
+
+### Alternativas
+
+- Conservar únicamente validaciones y firma locales.
+- Subir el keystore o `build.json` al repositorio para simplificar CI.
+- Construir desde tags en GitHub Actions, guardar la firma en secretos cifrados y generar checksums, SBOM y attestations.
+
+### Decisión y justificación
+
+Separar CI de cambios y release. CI usa permisos de solo lectura y ejecuta formato, lint, tipos, auditoría, pruebas, benchmark y build web. La release se activa desde tags semánticos, valida que coincidan con `package.json`, reconstruye el APK con material efímero proveniente de GitHub Secrets y publica CycloneDX, SHA-256 y attestations GitHub/Sigstore. Todas las acciones se fijan por commit SHA.
+
+### Consecuencias
+
+La release requiere cuatro secretos de repositorio y permisos `contents`, `id-token` y `attestations` de escritura únicamente en ese workflow. La llave base64 también se trata como secreto. El runner elimina `build.json` y el keystore al finalizar. Los consumidores pueden verificar el APK con `gh attestation verify`; esto demuestra procedencia e integridad, no ausencia de vulnerabilidades. El IPA continúa fuera de este flujo hasta disponer de runner macOS y credenciales Apple protegidas.
+
+Estado: Activa

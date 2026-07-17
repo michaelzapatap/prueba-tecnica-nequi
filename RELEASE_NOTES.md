@@ -1,6 +1,6 @@
-# Mis tareas 0.1.0
+# Mis tareas 0.1.1
 
-Primera entrega evaluable de la aplicación Ionic para gestión de tareas y categorías.
+Entrega final Android de la aplicación Ionic para gestión de tareas y categorías.
 
 ## Funcionalidad
 
@@ -16,6 +16,7 @@ Primera entrega evaluable de la aplicación Ionic para gestión de tareas y cate
 - Cordova Android 15, splash screen moderno e iconos adaptativos.
 - APK release firmado con RSA 3072 y APK Signature Scheme v2.
 - Firma verificada con `apksigner`.
+- Build reproducido desde el tag por GitHub Actions con material de firma cifrado en GitHub Secrets.
 
 ## Validación
 
@@ -24,12 +25,18 @@ Primera entrega evaluable de la aplicación Ionic para gestión de tareas y cate
 - Build web y Android release aprobados.
 - Auditoría de dependencias de producción sin vulnerabilidades.
 - Estados Remote Config activado, desactivado y offline verificados en un Samsung Galaxy S21 FE físico.
+- CRUD, asignación y filtro de categorías evidenciados en el mismo dispositivo físico.
 
-## Integridad del APK
+## Cadena de suministro
 
-- Archivo: `nequi-tasks-v0.1.0.apk`.
-- Tamaño: 2.995.647 bytes.
-- SHA-256: `3E38B6DC0DDA99BF5DD8311BDBC675B8403D9D8B16934D4AD24F5B4938A06E31`.
+- APK: `nequi-tasks-v0.1.1.apk`.
+- SBOM CycloneDX: `nequi-tasks-v0.1.1.sbom.cdx.json`.
+- Checksums: `SHA256SUMS.txt`.
+- Provenance de build y asociación SBOM verificables con GitHub CLI:
+
+  ```bash
+  gh attestation verify nequi-tasks-v0.1.1.apk --repo michaelzapatap/prueba-tecnica-nequi
+  ```
 
 ## Limitación conocida
 

@@ -1,5 +1,37 @@
 # Historial de cambios
 
+## 2026-07-17 15:45
+
+### Added
+
+Auditoría completa contra el PDF y checklist final con trazabilidad por requisito. Se añadieron dos evidencias físicas para administración de categorías y asignación/filtro de tareas, además de una guía segura y una plantilla no sensible para producir el IPA en macOS.
+
+GitHub Actions ahora valida formato, lint, TypeScript, auditoría de producción, 34 pruebas, benchmark y build web. Un workflow separado construye releases Android desde tags, verifica la firma, genera SBOM CycloneDX y checksums, crea attestations GitHub/Sigstore y publica los assets.
+
+### Security
+
+Las acciones oficiales están fijadas por SHA y cada workflow usa permisos mínimos. El keystore base64, contraseñas y alias se suministran mediante GitHub Secrets, se reconstruyen solo en el directorio efímero del runner y se eliminan al finalizar. No se versiona material Apple o Android sensible.
+
+Se actualizaron Angular CLI/build a `20.3.32` y el framework a `20.3.26`, eliminando los avisos altos detectados en herramientas de desarrollo. La auditoría de dependencias de producción reporta cero vulnerabilidades; permanecen avisos moderados transitivos de `uuid` en herramientas Cordova/webpack sin corrección compatible disponible.
+
+### Changed
+
+Versión alineada a `0.1.1` en npm y Cordova. Las notas de release y respuestas técnicas incorporan CI y cadena de suministro verificable.
+
+Archivos:
+
+- `.github/workflows/ci.yml` y `.github/workflows/android-release.yml`
+- `DELIVERY_CHECKLIST.md`
+- `docs/IOS_RELEASE.md` y `tools/ios-release.build.example.json`
+- `evidence/README.md` y `evidence/android/05-*.png`, `06-*.png`
+- `package.json`, `package-lock.json`, `config.xml` y `.gitignore`
+- `TECHNICAL_ANSWERS.md` y `RELEASE_NOTES.md`
+- `PROJECT_MEMORY.md`, `CHANGELOG.md`, `ROADMAP.md`, `DECISIONS.md` y `README.md`
+
+Motivo:
+
+Cerrar las brechas verificables de la entrega, automatizar sus controles y permitir que terceros validen la procedencia e inventario del APK sin exponer secretos.
+
 ## 2026-07-17 12:45
 
 ### Added

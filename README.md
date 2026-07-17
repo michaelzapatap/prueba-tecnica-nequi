@@ -1,5 +1,8 @@
 # Mis tareas
 
+[![Continuous integration](https://github.com/michaelzapatap/prueba-tecnica-nequi/actions/workflows/ci.yml/badge.svg?branch=feature%2Fproject-foundation)](https://github.com/michaelzapatap/prueba-tecnica-nequi/actions/workflows/ci.yml)
+[![Release Android](https://github.com/michaelzapatap/prueba-tecnica-nequi/actions/workflows/android-release.yml/badge.svg)](https://github.com/michaelzapatap/prueba-tecnica-nequi/actions/workflows/android-release.yml)
+
 Aplicación híbrida de gestión de tareas y categorías para la prueba técnica mobile. El código utiliza identificadores en inglés y la interfaz se presenta en español.
 
 ## Características
@@ -33,7 +36,7 @@ El entorno de desarrollo actual ya tiene Temurin 17.0.19, Android Studio, SDK 36
 ## Instalación
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/michaelzapatap/prueba-tecnica-nequi.git
 cd prueba-tecnica-nequi
 npm ci
 ```
@@ -87,6 +90,18 @@ npm run format:check
 `test:ci` requiere Chrome o Chromium compatible con Karma. La suite actual contiene 34 pruebas y valida dominio, migración/caché de almacenamiento, repositorios, facade, búsqueda, Remote Config, lotes grandes e interacciones de pantalla.
 
 Las respuestas solicitadas por la prueba están en [TECHNICAL_ANSWERS.md](TECHNICAL_ANSWERS.md). La matriz y las capturas realizadas en el Samsung físico están en [evidence/README.md](evidence/README.md).
+
+### Integración continua
+
+`.github/workflows/ci.yml` ejecuta en cada push y pull request:
+
+- Prettier, ESLint, TypeScript y auditoría de dependencias de producción.
+- Pruebas unitarias/de interacción con cobertura.
+- Benchmark de 50.000 tareas y build web de producción.
+
+Los reportes de cobertura, benchmark y `www` se conservan como artefactos temporales de GitHub Actions. El workflow usa permisos de solo lectura y acciones oficiales fijadas por SHA.
+
+`npm audit --omit=dev` reporta cero vulnerabilidades. La auditoría completa conserva avisos moderados transitivos de `uuid` en herramientas Cordova/webpack sin una actualización compatible; no afectan el bundle de producción y se mantienen registrados en `ROADMAP.md` para seguimiento.
 
 ## Rendimiento reproducible
 
@@ -152,6 +167,27 @@ npm run android:verify:release
 
 Respalde la llave en un almacén seguro: sin la misma llave no podrá publicar una actualización sobre una instalación existente. En CI o producción, aprovisione una llave institucional desde el gestor de secretos y genere `build.json` solo durante el job. La llave local creada por el script es adecuada para esta entrega técnica, no sustituye una política organizacional de custodia y rotación.
 
+### Release Android reproducible y verificable
+
+Al subir un tag `vMAJOR.MINOR.PATCH`, `.github/workflows/android-release.yml` comprueba que coincida con `package.json`, construye el APK firmado y publica:
+
+- `nequi-tasks-vX.Y.Z.apk`.
+- `nequi-tasks-vX.Y.Z.sbom.cdx.json` en formato CycloneDX.
+- `SHA256SUMS.txt`.
+- Attestations de provenance y SBOM vinculadas al repositorio, commit y workflow.
+
+La firma se aprovisiona mediante `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD` en GitHub Secrets. El runner crea el keystore y `build.json` de forma efímera y los elimina incluso si falla el job.
+
+Para verificar una descarga de `v0.1.1`:
+
+```bash
+gh release download v0.1.1 --repo michaelzapatap/prueba-tecnica-nequi
+sha256sum --check SHA256SUMS.txt
+gh attestation verify nequi-tasks-v0.1.1.apk --repo michaelzapatap/prueba-tecnica-nequi
+```
+
+Una attestation prueba procedencia e integridad respecto del workflow; no sustituye revisión de código, pruebas ni análisis de vulnerabilidades.
+
 Cordova Android 15.0.0 todavía emite avisos de deprecación desde `CordovaLib` y sus scripts Gradle. Es la última versión publicada; el proyecto no los silencia ni modifica código generado. La advertencia heredada de `<splash>` y las originadas por plugins antiguos sí fueron eliminadas.
 
 ### Probar en emulador Android
@@ -186,7 +222,7 @@ npm run ios:prepare
 npx cordova build ios
 ```
 
-La firma final necesita credenciales del responsable de la entrega.
+La firma final necesita credenciales del responsable de la entrega. El procedimiento completo para generar, verificar y publicar el IPA está en [docs/IOS_RELEASE.md](docs/IOS_RELEASE.md); `tools/ios-release.build.example.json` es una plantilla sin secretos.
 
 ## Estructura
 
@@ -207,9 +243,13 @@ src/environments/ Configuración por entorno
 src/theme/        Tokens visuales
 firebase/         Plantilla versionada de Remote Config
 evidence/         Protocolo y capturas de validación física
+.github/workflows/ CI y release Android verificable
+docs/             Procedimiento de release iOS
 resources/        Recursos nativos
 config.xml        Configuración Cordova
 tools/            Benchmark, Remote Config y firma Android
+DELIVERY_CHECKLIST.md
+                  Auditoría contra la especificación
 ```
 
 Las carpetas `features`, `core` y `shared` se agregarán cuando existan más pantallas o servicios transversales.
@@ -250,14 +290,15 @@ Las carpetas `features`, `core` y `shared` se agregarán cuando existan más pan
 3. Ejecutar lint, tipos, pruebas y build.
 4. Sincronizar la documentación obligatoria.
 5. Crear un Conventional Commit en inglés.
+6. Para una entrega, alinear `package.json`/`config.xml`, crear el tag semántico y verificar CI/attestations.
 
 Código, archivos, pruebas y commits en inglés; interfaz, accesibilidad y documentación de producto en español. TypeScript es estricto y no se registran secretos ni artefactos generados.
 
 ## Despliegue
 
-La versión Android firmada se publica en [GitHub Releases](https://github.com/michaelzapatap/prueba-tecnica-nequi/releases). Las notas versionadas están en [RELEASE_NOTES.md](RELEASE_NOTES.md). No se publican la llave, contraseñas, `build.json`, tokens de CLI ni cuentas de servicio.
+La versión Android firmada y sus archivos de cadena de suministro se publican en [GitHub Releases](https://github.com/michaelzapatap/prueba-tecnica-nequi/releases). Las notas versionadas están en [RELEASE_NOTES.md](RELEASE_NOTES.md) y el estado requisito por requisito en [DELIVERY_CHECKLIST.md](DELIVERY_CHECKLIST.md). No se publican la llave, contraseñas, `build.json`, tokens de CLI ni cuentas de servicio.
 
-El IPA firmado sigue pendiente porque requiere macOS/Xcode y credenciales Apple Developer. No hay publicación en tiendas configurada.
+El IPA firmado sigue pendiente porque requiere macOS/Xcode y credenciales Apple Developer. La guía reproducible está lista, pero no debe declararse cumplido ni publicarse un enlace hasta ejecutar sus verificaciones en un Mac autorizado. No hay publicación en tiendas configurada.
 
 ## Licencia
 
