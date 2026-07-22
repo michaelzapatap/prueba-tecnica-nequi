@@ -4,13 +4,8 @@
     <description>Aplicación móvil para administrar tareas y categorías.</description>
     <author>Technical assessment candidate</author>
     <content src="index.html" />
-    <access origin="*" />
-    <allow-intent href="http://*/*" />
-    <allow-intent href="https://*/*" />
-    <allow-intent href="tel:*" />
-    <allow-intent href="sms:*" />
-    <allow-intent href="mailto:*" />
-    <allow-intent href="geo:*" />
+    <access origin="https://firebaseinstallations.googleapis.com" />
+    <access origin="https://firebaseremoteconfig.googleapis.com" />
     <preference name="ScrollEnabled" value="false" />
     <preference name="BackupWebStorage" value="none" />
     <preference name="SplashScreenBackgroundColor" value="#ffffff" />
@@ -21,7 +16,6 @@
         <preference name="AndroidWindowSplashScreenAnimatedIcon" value="resources/android/splash/splash-icon.xml" />
         <preference name="AndroidWindowSplashScreenIconBackgroundColor" value="#da0081" />
         <resource-file src="resources/android/values/colors.xml" target="app/src/main/res/values/task_colors.xml" />
-        <allow-intent href="market:*" />
         <icon background="@color/task_launcher_background" density="ldpi" foreground="resources/android/icon/task-foreground.xml" monochrome="resources/android/icon/task-monochrome.xml" src="resources/android/icon/drawable-ldpi-icon.png" />
         <icon background="@color/task_launcher_background" density="mdpi" foreground="resources/android/icon/task-foreground.xml" monochrome="resources/android/icon/task-monochrome.xml" src="resources/android/icon/drawable-mdpi-icon.png" />
         <icon background="@color/task_launcher_background" density="hdpi" foreground="resources/android/icon/task-foreground.xml" monochrome="resources/android/icon/task-monochrome.xml" src="resources/android/icon/drawable-hdpi-icon.png" />
@@ -30,8 +24,6 @@
         <icon background="@color/task_launcher_background" density="xxxhdpi" foreground="resources/android/icon/task-foreground.xml" monochrome="resources/android/icon/task-monochrome.xml" src="resources/android/icon/drawable-xxxhdpi-icon.png" />
     </platform>
     <platform name="ios">
-        <allow-intent href="itms:*" />
-        <allow-intent href="itms-apps:*" />
         <icon height="57" src="resources/ios/icon/icon.png" width="57" />
         <icon height="114" src="resources/ios/icon/icon@2x.png" width="114" />
         <icon height="29" src="resources/ios/icon/icon-small.png" width="29" />

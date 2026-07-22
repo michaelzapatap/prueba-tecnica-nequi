@@ -8,20 +8,20 @@ Permitirá crear, completar y eliminar tareas; crear, editar y eliminar categor�
 
 ## Estado actual
 
-La aplicación funcional incluye dominio, persistencia local versionada, casos de uso, `TaskBoardFacade`, Firebase Remote Config real, búsqueda y optimizaciones para listas grandes. La suite contiene 34 pruebas unitarias/de interacción. Cordova genera Android 15 e iOS 8.1; el APK público exacto `v0.1.1` fue descargado, verificado por SHA-256/attestation, instalado y sometido a un smoke completo en un Samsung Galaxy S21 FE físico con Android 16. GitHub Actions valida cada cambio y construye releases Android firmadas desde tags, con SBOM, checksums y attestations. Las evidencias reproducibles cubren Remote Config, tareas, categorías, búsqueda, completado, persistencia, fallback offline y eliminación. Sigue pendiente el IPA firmado, que requiere macOS y credenciales Apple Developer; el repositorio público tampoco figura como fork porque no existe un upstream identificable en la especificación o los remotos.
+La aplicación funcional incluye dominio, persistencia local versionada, casos de uso, store reactivo, facades especializados, Firebase Remote Config real, búsqueda y optimizaciones para listas grandes. La suite contiene 55 pruebas unitarias/de interacción y exige umbrales globales mínimos de cobertura. Cordova genera Android 15 e iOS 8.1; el APK público exacto `v0.1.1` fue descargado, verificado por SHA-256/attestation, instalado y sometido a un smoke completo en un Samsung Galaxy S21 FE físico con Android 16. GitHub Actions valida cada cambio y construye releases Android firmadas desde tags, con SBOM, checksums y attestations. Las evidencias reproducibles cubren Remote Config, tareas, categorías, búsqueda, completado, persistencia, fallback offline y eliminación. Sigue pendiente publicar una versión correctiva que incorpore los ajustes posteriores a la evaluación y el IPA firmado, que requiere macOS y credenciales Apple Developer; el repositorio público tampoco figura como fork porque no existe un upstream identificable en la especificación o los remotos.
 
 ## Arquitectura
 
 Arquitectura por capas orientada a funcionalidades:
 
 - `domain`: entidades, reglas y contratos sin dependencias de framework.
-- `application`: casos de uso y facade de estado con Angular Signals.
+- `application`: casos de uso, store de estado, consultas puras y facades especializados con Angular Signals.
 - `infrastructure`: persistencia, Firebase y adaptadores.
 - `features`: pantallas de tareas y categorías.
 - `core`: configuración y servicios transversales singleton.
 - `shared`: piezas reutilizables sin reglas de negocio.
 
-La UI depende de abstracciones mediante inyección de dependencias. Se usan Repository, Use Case, Adapter y Facade. El estado reactivo se expone con Angular Signals en `TaskBoardFacade`. La configuración remota se consume mediante `FeatureFlagService`; el SDK de Firebase queda aislado en infraestructura.
+La UI depende de abstracciones mediante inyección de dependencias. Se usan Repository, Use Case, Adapter, Store, Query y Facade. `TaskBoardStore` conserva únicamente el estado compartido; `TaskListFacade` coordina carga y lectura, `TaskCommandFacade` las mutaciones de tareas y `CategoryCommandFacade` las mutaciones de categorías. `TaskBoardFeedbackService` centraliza errores de aplicación. La configuración remota se consume mediante `FeatureFlagService`; el SDK de Firebase queda aislado en infraestructura.
 
 ## Tecnologías y dependencias críticas
 
@@ -38,7 +38,7 @@ La auditoría npm de producción no reporta vulnerabilidades. La auditoría comp
 ## Repositorio
 
 - `src/app/domain`: modelos, reglas, factories, errores y contratos de repositorio.
-- `src/app/application`: casos de uso, providers y facades de estado.
+- `src/app/application`: configuración tipada, casos de uso, providers, store, consultas y facades especializados.
 - `src/app/application/queries`: consultas puras y medibles sobre listas.
 - `src/app/infrastructure/persistence`: adaptador de persistencia local versionada.
 - `src/app/infrastructure/remote-config`: adaptador Firebase, cliente, providers y fallback.
@@ -54,7 +54,7 @@ La auditoría npm de producción no reporta vulnerabilidades. La auditoría comp
 - `DELIVERY_CHECKLIST.md`: matriz auditable contra el PDF.
 - `resources`: iconos adaptativos, monocromáticos, fallbacks y splash nativos.
 - `config.xml`: configuración Cordova.
-- `tools`: benchmark reproducible y automatización de Remote Config y firma/verificación Android.
+- `tools`: benchmark reproducible, control de seguridad y automatización de Remote Config y firma/verificación Android.
 - PDF de la prueba: especificación original.
 
 No se versionan `node_modules`, `www`, `platforms`, `plugins`, `coverage`, `tmp`, `.local-signing` ni `build.json`.
@@ -98,7 +98,7 @@ La persistencia local usa un `VersionedLocalStore` sobre la abstracción `KeyVal
 
 ## Flujos principales
 
-- La pantalla principal carga tareas y categorías a través de `TaskBoardFacade`.
+- La pantalla principal consulta el tablero mediante `TaskListFacade` y envía comandos mediante `TaskCommandFacade` y `CategoryCommandFacade`.
 - Se pueden crear tareas con o sin categoría.
 - Se pueden completar y eliminar tareas.
 - Se pueden crear, editar y eliminar categorías.
@@ -106,16 +106,18 @@ La persistencia local usa un `VersionedLocalStore` sobre la abstracción `KeyVal
 - Cuando `task_search_enabled` está activa, el buscador filtra por título dentro del filtro de categoría seleccionado.
 - La UI renderiza inicialmente 30 tareas y amplía la ventana en lotes de 30 mediante “Mostrar más”. Cambiar filtro o búsqueda reinicia la ventana.
 - Los formularios visibles están en español; identificadores, métodos y archivos se mantienen en inglés.
+- Cada creación o mutación por entidad expone un estado pendiente explícito. Los controles afectados se deshabilitan durante la operación y los campos solo se limpian después de una confirmación exitosa.
 
 ## Estrategia de rendimiento
 
-- `TaskBoardFacade` usa Angular Signals y `ChangeDetectionStrategy.OnPush`.
+- `TaskBoardStore` y los tres facades usan Angular Signals; `HomePage` usa `ChangeDetectionStrategy.OnPush`.
 - Contadores de estado se calculan juntos en una sola iteración.
 - Las categorías se indexan en un `Map` para lookup O(1) durante el render.
 - Crear, completar, eliminar o editar actualiza Signals con el resultado del caso de uso, sin releer ni reordenar el repositorio completo.
 - Eliminar una categoría sí recarga ambas colecciones porque la regla desacopla tareas afectadas dentro del repositorio.
+- `selectTaskListPage` cuenta coincidencias y retiene únicamente la ventana solicitada en una sola pasada cuando hay filtros, evitando materializar un arreglo filtrado completo para renderizar 30 elementos.
 - El render incremental limita nodos Ionic y memoria visual sin asumir una altura fija de fila.
-- `npm run benchmark` mide el algoritmo real con 50.000 tareas y emite JSON con runtime, memoria aproximada y tiempos.
+- `npm run benchmark` mide los algoritmos reales, incluida la selección de página, con 50.000 tareas y emite JSON con runtime, memoria aproximada y tiempos.
 
 ## Servicios externos y configuración
 
@@ -141,6 +143,8 @@ Firebase Remote Config controla `task_search_enabled` a través de `FeatureFlagS
 - El entorno actual usa Temurin 17.0.19, `ANDROID_HOME=%LOCALAPPDATA%\Android\Sdk` y el AVD opcional `Nequi_API_34`.
 - El APK de depuración se genera en `platforms/android/app/build/outputs/apk/debug/app-debug.apk`; `platforms` no se versiona.
 - Android usa el origen local seguro `https://localhost` provisto por `WebViewAssetLoader`; no se permite tráfico HTTP local explícitamente.
+- La allowlist Cordova limita navegación de red a Firebase Installations y Firebase Remote Config; no existen intents HTTP/HTTPS comodín.
+- `src/index.html` aplica una Content Security Policy restrictiva. `npm run security:check` impide regresiones hacia orígenes comodín o una política `connect-src` abierta.
 - Cordova core provee WebView, splash, teclado básico y barras del sistema; no hay plugins Cordova instalados porque la aplicación no consume APIs nativas adicionales.
 - Android usa splash vectorial moderno e iconos adaptativos con capa monocromática; los PNG por densidad son fallback para API 24 y 25.
 - La firma release local usa PKCS#12, RSA de 3072 bits y APK Signature Scheme v2. `.local-signing` y `build.json` contienen material sensible local y nunca se versionan.
@@ -152,6 +156,7 @@ Firebase Remote Config controla `task_search_enabled` a través de `FeatureFlagS
 - Las capturas de aceptación se obtienen con ADB en el Samsung físico y se conservan en `evidence/android`; no se registra el serial del dispositivo.
 - La llave generada localmente sirve para la entrega técnica; debe respaldarse de forma segura porque perderla impide actualizar una instalación firmada con ella.
 - Cordova Android 15.0.0, última versión disponible, aún usa APIs Java y construcciones Gradle deprecadas; las advertencias provienen de `CordovaLib`, no del código ni de plugins del proyecto.
+- Karma genera HTML, LCOV y resumen JSON; CI exige al menos 85 % de sentencias, 65 % de ramas, 85 % de funciones y 85 % de líneas.
 - Un IPA firmado requiere macOS, Xcode, cuenta Apple Developer, certificados y perfiles. El procedimiento seguro, el preflight y la plantilla no sensible están en `docs/IOS_RELEASE.md`, `tools/verify-ios-release-environment.sh` y `tools/ios-release.build.example.json`. TestFlight es la distribución pública recomendada; un IPA `ad-hoc` con UDID debe entregarse por canal privado.
 
 ## Autenticación y autorización

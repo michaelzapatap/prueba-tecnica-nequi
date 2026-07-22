@@ -1,5 +1,40 @@
 # Historial de cambios
 
+## 2026-07-22 07:54
+
+### Refactored
+
+La facade monolítica del tablero se dividió en `TaskListFacade`, `TaskCommandFacade` y `CategoryCommandFacade`. `TaskBoardStore` conserva exclusivamente las entidades compartidas y `TaskBoardFeedbackService` centraliza el feedback de errores. La pantalla principal ahora depende de estos servicios especializados.
+
+### Fixed
+
+Las operaciones asíncronas de creación y mutación exponen estados pendientes globales o por entidad, evitan solicitudes duplicadas, deshabilitan únicamente los controles afectados y conservan los datos ingresados si un caso de uso falla. Se añadieron constantes compartidas para colores de categoría y tamaño de lote.
+
+### Performance
+
+El selector `selectTaskListPage` cuenta coincidencias y retiene solo la ventana solicitada en una pasada cuando hay filtros, evitando crear un arreglo filtrado completo para renderizar el primer lote. El benchmark mide ahora este mismo camino de producción.
+
+### Security
+
+La allowlist Cordova quedó limitada a Firebase Installations y Firebase Remote Config; se retiraron intents externos comodín o no utilizados y se agregó una Content Security Policy restrictiva. `npm run security:check` protege estas invariantes en local y GitHub Actions.
+
+### Changed
+
+La suite se amplió de 34 a 55 pruebas para cubrir casos de uso, store, facades, concurrencia, CRUD de categorías e interacciones críticas de `HomePage`. Karma genera HTML, LCOV y JSON y exige mínimos globales de 85 % en sentencias, 65 % en ramas, 85 % en funciones y 85 % en líneas.
+
+Archivos:
+
+- `src/app/application/config`, `facades`, `queries`, `state`, `src/app/domain/config` y pruebas de casos de uso
+- `src/app/home/home.page.ts`, `home.page.html` y `home.page.spec.ts`
+- `src/app/testing/in-memory-repositories.ts`
+- `config.xml`, `src/index.html` y `tools/validate-security-config.mjs`
+- `angular.json`, `karma.conf.js`, `package.json`, `.github/workflows/ci.yml` y `tools/task-list.benchmark.ts`
+- `PROJECT_MEMORY.md`, `CHANGELOG.md`, `ROADMAP.md`, `DECISIONS.md`, `README.md`, `TECHNICAL_ANSWERS.md` y `DELIVERY_CHECKLIST.md`
+
+Motivo:
+
+Resolver las seis observaciones recibidas del evaluador con cambios ejecutables y verificables en cobertura, control asíncrono, rendimiento, diseño SOLID, seguridad móvil y reutilización de constantes.
+
 ## 2026-07-17 17:30
 
 ### Added

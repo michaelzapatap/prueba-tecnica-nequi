@@ -1,5 +1,10 @@
 import { Task } from '../../domain/models/task.model';
-import { countTasks, queryTasks, sortTasksByCreationDate } from './task-list.query';
+import {
+  countTasks,
+  queryTasks,
+  selectTaskListPage,
+  sortTasksByCreationDate,
+} from './task-list.query';
 
 const tasks: readonly Task[] = [
   {
@@ -40,5 +45,35 @@ describe('task list queries', () => {
 
   it('counts task states in one traversal', () => {
     expect(countTasks(tasks)).toEqual({ pending: 1, completed: 1 });
+  });
+
+  it('selects only the requested render window while counting all matches', () => {
+    const page = selectTaskListPage(
+      tasks,
+      {
+        categoryFilter: 'all',
+        searchQuery: '',
+        isSearchEnabled: true,
+      },
+      1,
+    );
+
+    expect(page.tasks.map((task) => task.id)).toEqual(['task-1']);
+    expect(page.matchingTaskCount).toBe(2);
+  });
+
+  it('combines filters without allocating the complete matching collection', () => {
+    const page = selectTaskListPage(
+      tasks,
+      {
+        categoryFilter: 'uncategorized',
+        searchQuery: 'correo',
+        isSearchEnabled: true,
+      },
+      1,
+    );
+
+    expect(page.tasks.map((task) => task.id)).toEqual(['task-2']);
+    expect(page.matchingTaskCount).toBe(1);
   });
 });

@@ -1,0 +1,2 @@
+export const UNCATEGORIZED_CATEGORY_COLOR = '#8f9bb3';
+export const TASK_RENDER_BATCH_SIZE = 30;

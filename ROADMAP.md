@@ -15,20 +15,20 @@
 - Implementación de persistencia local versionada con repositorios concretos.
 - Cobertura unitaria inicial para factories de dominio, migración de almacenamiento y repositorios locales.
 - Implementación de casos de uso de tareas y categorías.
-- Implementación de `TaskBoardFacade` con Angular Signals.
+- Implementación de `TaskBoardStore`, `TaskListFacade`, `TaskCommandFacade` y `CategoryCommandFacade` con Angular Signals y responsabilidades separadas.
 - Implementación de pantalla principal para crear, completar y eliminar tareas.
 - Implementación de creación, edición, eliminación, asignación y filtro por categorías.
 - Construcción de una primera UX responsive y completamente en español.
-- Pruebas unitarias de facade y arranque de la pantalla principal.
+- Pruebas unitarias de facades, store, casos de uso e interacciones de la pantalla principal.
 - Integración desacoplada de Firebase Remote Config mediante su SDK modular.
 - Implementación de la bandera `task_search_enabled` con default local, caché y fallback offline.
 - Implementación de búsqueda de tareas por título, combinable con el filtro de categoría.
 - Pruebas unitarias de valores remotos, modo offline, Firebase no configurado y bandera desactivada.
 - Caché en memoria para evitar deserializaciones repetidas del almacenamiento local.
 - Actualizaciones incrementales de estado sin recargar el repositorio tras cada mutación de tarea.
-- Renderizado incremental en lotes de 30, `OnPush`, contadores en una pasada y lookup de categorías indexado.
+- Renderizado incremental en lotes de 30, `OnPush`, selección de página filtrada en una pasada, contadores eficientes y lookup de categorías indexado.
 - Benchmark reproducible sobre 50.000 tareas mediante `npm run benchmark`.
-- Ampliación a 34 pruebas, incluidas interacciones de pantalla y listas grandes.
+- Ampliación a 55 pruebas, incluidas concurrencia asíncrona, CRUD de categorías, interacciones de pantalla y listas grandes.
 - Instalación de JDK 17 y configuración persistente de `JAVA_HOME`, `CORDOVA_JAVA_HOME`, `ANDROID_HOME` y herramientas Android en `PATH`.
 - Creación del AVD `Nequi_API_34` como opción local de pruebas.
 - Compilación del APK debug e instalación, arranque e inspección visual verificados en un Samsung Galaxy S21 FE físico.
@@ -45,10 +45,13 @@
 - Evidencias físicas adicionales de creación/administración de categorías y asignación/filtro de tareas.
 - Descarga, verificación SHA-256/attestation, instalación y smoke completo del APK público exacto `v0.1.1` en el Samsung físico, incluyendo persistencia, offline y limpieza.
 - Auditoría punto por punto contra las tres páginas del PDF y checklist de entrega trazable.
-- GitHub Actions para formato, lint, tipos, auditoría, pruebas, benchmark y build web.
+- GitHub Actions para formato, lint, tipos, seguridad Cordova/CSP, auditoría, pruebas con umbrales de cobertura, benchmark y build web.
 - Workflow de release Android desde tag con firma efímera, SBOM CycloneDX, checksums y attestations GitHub/Sigstore.
 - Guía y plantilla segura para generar, verificar y publicar el IPA desde macOS.
 - Actualización de seguridad compatible de Angular; auditoría de producción sin vulnerabilidades y eliminación de avisos altos del toolchain.
+- Corrección de las seis observaciones del evaluador: cobertura crítica, estados asíncronos, evidencia ejecutable de rendimiento, separación de responsabilidades, política de red restrictiva y constantes compartidas.
+- Umbrales globales de cobertura: 85 % de sentencias, 65 % de ramas, 85 % de funciones y 85 % de líneas.
+- Allowlist Cordova limitada a los endpoints Firebase utilizados, CSP restrictiva y validación automática mediante `npm run security:check`.
 
 ## En progreso
 
@@ -56,6 +59,7 @@
 
 ## Pendiente
 
+- Generar, instalar y someter a smoke físico una release correctiva posterior a `v0.1.1`, y publicar sus evidencias, checksum y attestations.
 - Actualizar las dependencias transitivas `uuid` de Cordova/webpack cuando sus proveedores publiquen una corrección compatible.
 - Ejecutar en macOS el preflight, definir TestFlight o distribución `ad-hoc` privada, generar el IPA firmado, completar el smoke iOS y publicar el enlace seguro.
 - Asociar el repositorio como fork solo si el evaluador proporciona el upstream original correcto.

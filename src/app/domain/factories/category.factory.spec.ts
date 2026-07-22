@@ -1,3 +1,4 @@
+import { DEFAULT_CATEGORY_COLOR } from '../config/category.config';
 import { DomainError } from '../errors/domain-error';
 import { Clock } from '../services/clock';
 import { IdGenerator } from '../services/id-generator';
@@ -22,7 +23,7 @@ describe('category factory', () => {
   it('uses the default color when the provided color is invalid', () => {
     const category = createCategory({ name: 'Trabajo', color: 'blue' }, idGenerator, clock);
 
-    expect(category.color).toBe('#6c2bd9');
+    expect(category.color).toBe(DEFAULT_CATEGORY_COLOR);
   });
 
   it('rejects empty names', () => {

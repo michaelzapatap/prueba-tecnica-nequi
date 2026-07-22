@@ -1,11 +1,12 @@
 import { performance } from 'node:perf_hooks';
 
 import { Task } from '../src/app/domain/models/task.model';
+import { TASK_RENDER_BATCH_SIZE } from '../src/app/application/config/task-board.config';
 import {
   countTasks,
   queryTasks,
+  selectTaskListPage,
   sortTasksByCreationDate,
-  TASK_RENDER_BATCH_SIZE,
 } from '../src/app/application/queries/task-list.query';
 
 interface Measurement {
@@ -72,6 +73,17 @@ const measurements = [
       searchQuery: 'report',
       isSearchEnabled: true,
     }),
+  ),
+  measure('select_render_page', 100, () =>
+    selectTaskListPage(
+      sortedTasks,
+      {
+        categoryFilter: 'category-work',
+        searchQuery: 'report',
+        isSearchEnabled: true,
+      },
+      TASK_RENDER_BATCH_SIZE,
+    ),
   ),
   measure('render_batch_slice', 1_000, () => sortedTasks.slice(0, TASK_RENDER_BATCH_SIZE)),
 ];

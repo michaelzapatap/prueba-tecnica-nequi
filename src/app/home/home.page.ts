@@ -41,7 +41,10 @@ import {
 import { Category } from '../domain/models/category.model';
 import { EntityId } from '../domain/models/entity-id.model';
 import { Task } from '../domain/models/task.model';
-import { CategoryFilter, TaskBoardFacade } from '../application/facades/task-board.facade';
+import { DEFAULT_CATEGORY_COLOR } from '../domain/config/category.config';
+import { CategoryCommandFacade } from '../application/facades/category-command.facade';
+import { TaskCommandFacade } from '../application/facades/task-command.facade';
+import { CategoryFilter, TaskListFacade } from '../application/facades/task-list.facade';
 
 @Component({
   selector: 'app-home',
@@ -72,14 +75,16 @@ import { CategoryFilter, TaskBoardFacade } from '../application/facades/task-boa
   ],
 })
 export class HomePage implements OnInit {
-  readonly facade = inject(TaskBoardFacade);
+  readonly taskList = inject(TaskListFacade);
+  readonly taskCommands = inject(TaskCommandFacade);
+  readonly categoryCommands = inject(CategoryCommandFacade);
   readonly taskTitle = signal('');
   readonly selectedTaskCategoryId = signal<EntityId | ''>('');
   readonly categoryName = signal('');
-  readonly categoryColor = signal('#2f80ed');
+  readonly categoryColor = signal(DEFAULT_CATEGORY_COLOR);
   readonly editingCategoryId = signal<EntityId | null>(null);
   readonly editingCategoryName = signal('');
-  readonly editingCategoryColor = signal('#2f80ed');
+  readonly editingCategoryColor = signal(DEFAULT_CATEGORY_COLOR);
 
   readonly canCreateTask = computed(() => this.taskTitle().trim().length > 0);
   readonly canCreateCategory = computed(() => this.categoryName().trim().length > 0);
@@ -97,7 +102,7 @@ export class HomePage implements OnInit {
   }
 
   ngOnInit(): void {
-    void this.facade.load();
+    void this.taskList.load();
   }
 
   onTaskCategoryChange(categoryId: EntityId | '' | null | undefined): void {
@@ -105,7 +110,7 @@ export class HomePage implements OnInit {
   }
 
   onCategoryFilterChange(categoryFilter: CategoryFilter | undefined): void {
-    this.facade.setCategoryFilter(categoryFilter ?? 'all');
+    this.taskList.setCategoryFilter(categoryFilter ?? 'all');
   }
 
   onTaskTitleChange(title: string | number | null | undefined): void {
@@ -113,7 +118,7 @@ export class HomePage implements OnInit {
   }
 
   onSearchQueryChange(searchQuery: string | null | undefined): void {
-    this.facade.setSearchQuery(searchQuery ?? '');
+    this.taskList.setSearchQuery(searchQuery ?? '');
   }
 
   onCategoryNameChange(name: string | number | null | undefined): void {
@@ -133,36 +138,47 @@ export class HomePage implements OnInit {
   }
 
   async createTask(): Promise<void> {
-    if (!this.canCreateTask()) {
+    if (!this.canCreateTask() || this.taskCommands.isCreatingTask()) {
       return;
     }
 
     const selectedCategoryId = this.selectedTaskCategoryId();
+    const wasCreated = await this.taskCommands.createTask(
+      this.taskTitle(),
+      selectedCategoryId || null,
+    );
 
-    await this.facade.createTask(this.taskTitle(), selectedCategoryId || null);
-    this.taskTitle.set('');
+    if (wasCreated) {
+      this.taskTitle.set('');
+    }
   }
 
   async toggleTask(task: Task, isCompleted: boolean): Promise<void> {
-    await this.facade.setTaskCompletion(task, isCompleted);
+    await this.taskCommands.setTaskCompletion(task.id, isCompleted);
   }
 
   async deleteTask(taskId: EntityId): Promise<void> {
-    await this.facade.deleteTask(taskId);
+    await this.taskCommands.deleteTask(taskId);
   }
 
   loadMoreTasks(): void {
-    this.facade.loadMoreTasks();
+    this.taskList.loadMoreTasks();
   }
 
   async createCategory(): Promise<void> {
-    if (!this.canCreateCategory()) {
+    if (!this.canCreateCategory() || this.categoryCommands.isCreatingCategory()) {
       return;
     }
 
-    await this.facade.createCategory(this.categoryName(), this.categoryColor());
-    this.categoryName.set('');
-    this.categoryColor.set('#2f80ed');
+    const wasCreated = await this.categoryCommands.createCategory(
+      this.categoryName(),
+      this.categoryColor(),
+    );
+
+    if (wasCreated) {
+      this.categoryName.set('');
+      this.categoryColor.set(DEFAULT_CATEGORY_COLOR);
+    }
   }
 
   startCategoryEdit(category: Category): void {
@@ -174,27 +190,29 @@ export class HomePage implements OnInit {
   cancelCategoryEdit(): void {
     this.editingCategoryId.set(null);
     this.editingCategoryName.set('');
-    this.editingCategoryColor.set('#2f80ed');
+    this.editingCategoryColor.set(DEFAULT_CATEGORY_COLOR);
   }
 
   async saveCategoryEdit(categoryId: EntityId): Promise<void> {
-    if (!this.canUpdateCategory()) {
+    if (!this.canUpdateCategory() || this.categoryCommands.isCategoryPending(categoryId)) {
       return;
     }
 
-    await this.facade.updateCategory(
+    const wasUpdated = await this.categoryCommands.updateCategory(
       categoryId,
       this.editingCategoryName(),
       this.editingCategoryColor(),
     );
-    this.cancelCategoryEdit();
+    if (wasUpdated) {
+      this.cancelCategoryEdit();
+    }
   }
 
   async deleteCategory(categoryId: EntityId): Promise<void> {
-    await this.facade.deleteCategory(categoryId);
+    await this.categoryCommands.deleteCategory(categoryId);
   }
 
   private readInputValue(event: Event): string {
-    return event.target instanceof HTMLInputElement ? event.target.value : '#2f80ed';
+    return event.target instanceof HTMLInputElement ? event.target.value : DEFAULT_CATEGORY_COLOR;
   }
 }

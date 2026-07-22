@@ -1,10 +1,12 @@
+import {
+  CATEGORY_COLOR_PATTERN,
+  DEFAULT_CATEGORY_COLOR,
+  MAX_CATEGORY_NAME_LENGTH,
+} from '../config/category.config';
 import { Category, CreateCategoryCommand, UpdateCategoryCommand } from '../models/category.model';
 import { Clock } from '../services/clock';
 import { IdGenerator } from '../services/id-generator';
 import { DomainError } from '../errors/domain-error';
-
-const DEFAULT_CATEGORY_COLOR = '#6c2bd9';
-const MAX_CATEGORY_NAME_LENGTH = 40;
 
 export function createCategory(
   command: CreateCategoryCommand,
@@ -51,9 +53,7 @@ function normalizeCategoryName(name: string): string {
 
 function normalizeCategoryColor(color: string): string {
   const normalizedColor = color.trim();
-  const hexColorPattern = /^#[0-9a-fA-F]{6}$/;
-
-  return hexColorPattern.test(normalizedColor)
+  return CATEGORY_COLOR_PATTERN.test(normalizedColor)
     ? normalizedColor.toLowerCase()
     : DEFAULT_CATEGORY_COLOR;
 }

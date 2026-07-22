@@ -16,7 +16,7 @@ La lógica de tareas, persistencia y configuración remota no debe quedar acopla
 
 ### Decisión y justificación
 
-Usar capas orientadas a funcionalidades, Repository, Use Case, Adapter y Facade; Angular Signals maneja el estado de UI mediante `TaskBoardFacade`. Esto aplica SOLID, facilita pruebas y evita el coste de NgRx para el alcance actual.
+Usar capas orientadas a funcionalidades y los patrones Repository, Use Case, Adapter, Store, Query y Facade. Angular Signals maneja el estado reactivo. Esto aplica SOLID, facilita pruebas y evita el coste de NgRx para el alcance actual.
 
 ### Consecuencias
 
@@ -114,7 +114,7 @@ Renderizar todas las tareas con componentes Ionic aumenta el DOM, el tiempo de d
 
 ### Decisión y justificación
 
-Mantener la colección completa en Signals y renderizar lotes de 30 con una acción explícita “Mostrar más”. Se combina con `OnPush`, consultas puras, caché de deserialización y actualizaciones incrementales del facade. La estrategia tolera alturas variables, conserva búsqueda/filtros y no añade una dependencia de virtualización.
+Mantener la colección completa en Signals y renderizar lotes de 30 con una acción explícita “Mostrar más”. Se combina con `OnPush`, consultas puras, selección de página en una sola pasada, caché de deserialización y actualizaciones incrementales del store. La estrategia tolera alturas variables, conserva búsqueda/filtros y no añade una dependencia de virtualización.
 
 ### Consecuencias
 
@@ -193,5 +193,53 @@ Separar CI de cambios y release. CI usa permisos de solo lectura y ejecuta forma
 ### Consecuencias
 
 La release requiere cuatro secretos de repositorio y permisos `contents`, `id-token` y `attestations` de escritura únicamente en ese workflow. La llave base64 también se trata como secreto. El runner elimina `build.json` y el keystore al finalizar. Los consumidores pueden verificar el APK con `gh attestation verify`; esto demuestra procedencia e integridad, no ausencia de vulnerabilidades. El IPA continúa fuera de este flujo hasta disponer de runner macOS y credenciales Apple protegidas.
+
+Estado: Activa
+
+## ADR-009: Separar lectura, comandos y estado del tablero
+
+Fecha: 2026-07-22
+
+### Contexto y problema
+
+Una facade única coordinaba carga, consultas, feature flags, comandos de tareas, comandos de categorías y errores. Esto concentraba demasiadas razones de cambio y no exponía estados pendientes suficientemente precisos para bloquear operaciones concurrentes sobre una misma entidad.
+
+### Alternativas
+
+- Mantener una facade única y agregar más Signals.
+- Introducir NgRx con acciones, reducers y effects.
+- Separar store compartido, lectura, comandos de tareas, comandos de categorías y feedback.
+
+### Decisión y justificación
+
+Usar `TaskBoardStore` como contenedor mínimo de entidades; `TaskListFacade` para carga, filtros, búsqueda y ventana de render; `TaskCommandFacade` y `CategoryCommandFacade` para sus respectivos casos de uso; y `TaskBoardFeedbackService` para errores. Los comandos retornan éxito explícito y mantienen estados pendientes globales o por identificador.
+
+### Consecuencias
+
+Cada servicio tiene una razón de cambio y puede probarse aisladamente. La UI no limpia entradas ante un fallo, deshabilita únicamente los controles afectados y rechaza comandos duplicados mientras una operación equivalente está en curso. Aumenta el número de clases, pero disminuye el acoplamiento y la complejidad de cada una.
+
+Estado: Activa
+
+## ADR-010: Política de red móvil con privilegio mínimo
+
+Fecha: 2026-07-22
+
+### Contexto y problema
+
+La configuración Cordova permitía cualquier origen y exponía intents HTTP/HTTPS comodín. Esa amplitud no era necesaria para una aplicación que solo consulta dos servicios Firebase y aumenta la superficie de navegación y exfiltración ante una inyección.
+
+### Alternativas
+
+- Conservar comodines por simplicidad.
+- Permitir dominios Firebase completos.
+- Autorizar únicamente los endpoints usados y aplicar CSP en el documento web.
+
+### Decisión y justificación
+
+Autorizar solamente Firebase Installations y Firebase Remote Config en `config.xml`, retirar intents externos no utilizados y aplicar una Content Security Policy con `default-src 'self'`, `object-src 'none'` y `connect-src` limitado. Una comprobación ejecutable valida la política en local y CI.
+
+### Consecuencias
+
+La aplicación conserva el funcionamiento requerido con Remote Config y reduce privilegios innecesarios. Cualquier servicio de red o enlace externo futuro deberá agregarse explícitamente, justificarse y cubrirse en la validación de seguridad.
 
 Estado: Activa

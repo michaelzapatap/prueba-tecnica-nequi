@@ -20,7 +20,7 @@ La base técnica, el dominio, la persistencia local versionada, la pantalla prin
 
 Ionic 8, Angular 20 standalone, TypeScript 5.9, Firebase JavaScript SDK 12.16, Cordova 13, Android 15, iOS 8.1, Jasmine/Karma, ESLint y Prettier.
 
-Se usa arquitectura por capas: dominio independiente de Ionic, casos de uso en aplicación, `TaskBoardFacade` con Angular Signals, repositorios y feature flags como contratos, y persistencia/Firebase como adaptadores. El store `v1` usa caché de deserialización sobre `localStorage`; la UI aplica `OnPush` y renderiza las tareas en lotes de 30. Detalles en `PROJECT_MEMORY.md` y `DECISIONS.md`.
+Se usa arquitectura por capas: dominio independiente de Ionic, casos de uso en aplicación, `TaskBoardStore` como estado compartido, facades separados para lectura, comandos de tareas y comandos de categorías, repositorios y feature flags como contratos, y persistencia/Firebase como adaptadores. El store persistente `v1` usa caché de deserialización sobre `localStorage`; la UI aplica `OnPush`, selecciona la página filtrada en una sola pasada y renderiza tareas en lotes de 30. Detalles en `PROJECT_MEMORY.md` y `DECISIONS.md`.
 
 ## Requisitos
 
@@ -85,9 +85,12 @@ npm run typecheck
 npm test
 npm run test:ci
 npm run format:check
+npm run security:check
 ```
 
-`test:ci` requiere Chrome o Chromium compatible con Karma. La suite actual contiene 34 pruebas y valida dominio, migración/caché de almacenamiento, repositorios, facade, búsqueda, Remote Config, lotes grandes e interacciones de pantalla.
+`test:ci` requiere Chrome o Chromium compatible con Karma. La suite actual contiene 55 pruebas y valida dominio, casos de uso, migración/caché de almacenamiento, repositorios, store, facades, estados asíncronos, búsqueda, Remote Config, lotes grandes e interacciones de pantalla. Karma rechaza una ejecución que no alcance globalmente 85 % de sentencias, 65 % de ramas, 85 % de funciones y 85 % de líneas; también genera reportes HTML, LCOV y JSON.
+
+`security:check` valida que Cordova no recupere orígenes o intents HTTP/HTTPS comodín y que la Content Security Policy conserve únicamente los endpoints Firebase necesarios. La allowlist actual autoriza Firebase Installations y Firebase Remote Config.
 
 Las respuestas solicitadas por la prueba están en [TECHNICAL_ANSWERS.md](TECHNICAL_ANSWERS.md). La matriz y las diez capturas realizadas en el Samsung físico están en [evidence/README.md](evidence/README.md), incluido el smoke final del APK público exacto `v0.1.1`.
 
@@ -95,7 +98,7 @@ Las respuestas solicitadas por la prueba están en [TECHNICAL_ANSWERS.md](TECHNI
 
 `.github/workflows/ci.yml` ejecuta en cada push y pull request:
 
-- Prettier, ESLint, TypeScript y auditoría de dependencias de producción.
+- Prettier, ESLint, TypeScript, política Cordova/CSP y auditoría de dependencias de producción.
 - Pruebas unitarias/de interacción con cobertura.
 - Benchmark de 50.000 tareas y build web de producción.
 
@@ -109,7 +112,7 @@ Los reportes de cobertura, benchmark y `www` se conservan como artefactos tempor
 npm run benchmark
 ```
 
-El benchmark ejecuta las consultas reales con 50.000 tareas y entrega JSON. La referencia obtenida en Windows x64 con Node.js 22.17 fue: dataset aproximado de 10 MB, ordenamiento promedio de 6,9 ms, conteo de 0,4–0,6 ms, búsqueda de 1,3 ms y slice de 30 filas por debajo de 0,01 ms. Los valores son orientativos y deben compararse en la misma máquina/runtime.
+El benchmark ejecuta las consultas reales con 50.000 tareas y entrega JSON. Mide ordenamiento, conteo, búsqueda, filtro, extracción simple y `selectTaskListPage`, el selector usado por la UI que cuenta coincidencias pero retiene únicamente la ventana solicitada. Los valores son orientativos y deben compararse en la misma máquina/runtime.
 
 ## Compilación
 
@@ -232,7 +235,7 @@ La firma final necesita credenciales del responsable de la entrega. El procedimi
 
 ```text
 src/app/application/
-                  Casos de uso, providers y facades
+                  Configuración, casos de uso, providers, store y facades
 src/app/application/queries/
                   Consultas puras para listas y contadores
 src/app/domain/   Modelos, reglas y contratos de negocio
@@ -251,7 +254,7 @@ evidence/         Protocolo y capturas de validación física
 docs/             Procedimiento de release iOS
 resources/        Recursos nativos
 config.xml        Configuración Cordova
-tools/            Benchmark, Remote Config y firma Android
+tools/            Benchmark, seguridad, Remote Config y firma Android
 DELIVERY_CHECKLIST.md
                   Auditoría contra la especificación
 ```
@@ -272,6 +275,7 @@ Las carpetas `features`, `core` y `shared` se agregarán cuando existan más pan
 | `npm run test:ci`                        | Pruebas con cobertura            |
 | `npm run format`                         | Aplicar formato                  |
 | `npm run format:check`                   | Verificar formato                |
+| `npm run security:check`                 | Validar allowlist Cordova y CSP  |
 | `npm run firebase:remote-config:enable`  | Publicar búsqueda activada       |
 | `npm run firebase:remote-config:disable` | Publicar búsqueda desactivada    |
 | `npm run firebase:remote-config:verify`  | Consultar la plantilla remota    |

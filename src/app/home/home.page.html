@@ -20,15 +20,15 @@
 
       <div class="summary-counters">
         <span
-          ><strong>{{ facade.pendingTasks() }}</strong> pendientes</span
+          ><strong>{{ taskList.pendingTasks() }}</strong> pendientes</span
         >
         <span
-          ><strong>{{ facade.completedTasks() }}</strong> completadas</span
+          ><strong>{{ taskList.completedTasks() }}</strong> completadas</span
         >
       </div>
     </section>
 
-    @if (facade.errorMessage(); as errorMessage) {
+    @if (taskList.errorMessage(); as errorMessage) {
       <ion-text color="danger" class="feedback-message">
         <p>{{ errorMessage }}</p>
       </ion-text>
@@ -42,6 +42,7 @@
             labelPlacement="stacked"
             placeholder="Ej. Preparar entrega"
             [ngModel]="taskTitle()"
+            [disabled]="taskCommands.isCreatingTask()"
             name="taskTitle"
             (ngModelChange)="onTaskTitleChange($event)"
           ></ion-input>
@@ -51,16 +52,20 @@
             labelPlacement="stacked"
             interface="popover"
             [ngModel]="selectedTaskCategoryId()"
+            [disabled]="taskCommands.isCreatingTask()"
             name="taskCategory"
             (ionChange)="onTaskCategoryChange($any($event).detail.value)"
           >
             <ion-select-option value="">Sin categoría</ion-select-option>
-            @for (category of facade.categories(); track category.id) {
+            @for (category of taskList.categories(); track category.id) {
               <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
             }
           </ion-select>
 
-          <ion-button type="submit" [disabled]="!canCreateTask() || facade.isLoading()">
+          <ion-button
+            type="submit"
+            [disabled]="!canCreateTask() || taskList.isLoading() || taskCommands.isCreatingTask()"
+          >
             <ion-icon name="add-outline" slot="start"></ion-icon>
             Agregar
           </ion-button>
@@ -69,34 +74,35 @@
         <ion-segment
           class="category-filter"
           scrollable="true"
-          [value]="facade.selectedCategory()"
+          [value]="taskList.selectedCategory()"
           (ionChange)="onCategoryFilterChange($any($event).detail.value)"
         >
           <ion-segment-button value="all">Todas</ion-segment-button>
           <ion-segment-button value="uncategorized">Sin categoría</ion-segment-button>
-          @for (category of facade.categories(); track category.id) {
+          @for (category of taskList.categories(); track category.id) {
             <ion-segment-button [value]="category.id">{{ category.name }}</ion-segment-button>
           }
         </ion-segment>
 
-        @if (facade.isTaskSearchEnabled()) {
+        @if (taskList.isTaskSearchEnabled()) {
           <ion-searchbar
             class="task-search"
             placeholder="Buscar tareas"
             aria-label="Buscar tareas"
             [debounce]="150"
-            [value]="facade.searchQuery()"
+            [value]="taskList.searchQuery()"
             (ionInput)="onSearchQueryChange($any($event).detail.value)"
           ></ion-searchbar>
         }
 
-        @if (facade.visibleTasks().length > 0) {
+        @if (taskList.visibleTaskCount() > 0) {
           <ion-list class="task-list">
-            @for (task of facade.renderedTasks(); track task.id) {
+            @for (task of taskList.renderedTasks(); track task.id) {
               <ion-item class="task-row" lines="full">
                 <ion-checkbox
                   slot="start"
                   [checked]="task.isCompleted"
+                  [disabled]="taskCommands.isTaskPending(task.id)"
                   [attr.aria-label]="'Cambiar estado de ' + task.title"
                   (ionChange)="toggleTask(task, $any($event).detail.checked)"
                 ></ion-checkbox>
@@ -106,9 +112,9 @@
                   <p>
                     <span
                       class="category-dot"
-                      [style.background]="facade.getCategoryColor(task.categoryId)"
+                      [style.background]="taskList.getCategoryColor(task.categoryId)"
                     ></span>
-                    {{ facade.getCategoryName(task.categoryId) }}
+                    {{ taskList.getCategoryName(task.categoryId) }}
                   </p>
                 </ion-label>
 
@@ -121,6 +127,7 @@
                   fill="clear"
                   color="danger"
                   [attr.aria-label]="'Eliminar ' + task.title"
+                  [disabled]="taskCommands.isTaskPending(task.id)"
                   (click)="deleteTask(task.id)"
                 >
                   <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
@@ -129,7 +136,7 @@
             }
           </ion-list>
 
-          @if (facade.hasMoreTasks()) {
+          @if (taskList.hasMoreTasks()) {
             <ion-button
               class="load-more-button"
               expand="block"
@@ -138,17 +145,17 @@
             >
               Mostrar
               {{
-                facade.renderBatchSize < facade.remainingTaskCount()
-                  ? facade.renderBatchSize
-                  : facade.remainingTaskCount()
+                taskList.renderBatchSize < taskList.remainingTaskCount()
+                  ? taskList.renderBatchSize
+                  : taskList.remainingTaskCount()
               }}
-              más ({{ facade.renderedTasks().length }} de {{ facade.visibleTasks().length }})
+              más ({{ taskList.renderedTasks().length }} de {{ taskList.visibleTaskCount() }})
             </ion-button>
           }
         } @else {
           <div class="empty-state">
             <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
-            @if (facade.searchQuery()) {
+            @if (taskList.searchQuery()) {
               <p>No encontramos tareas con esa búsqueda.</p>
             } @else {
               <p>No hay tareas en esta vista.</p>
@@ -169,19 +176,27 @@
             labelPlacement="stacked"
             placeholder="Ej. Trabajo"
             [ngModel]="categoryName()"
+            [disabled]="categoryCommands.isCreatingCategory()"
             name="categoryName"
             (ngModelChange)="onCategoryNameChange($event)"
           ></ion-input>
 
           <label class="color-field">
             Color
-            <input type="color" [value]="categoryColor()" (input)="onCategoryColorChange($event)" />
+            <input
+              type="color"
+              [value]="categoryColor()"
+              [disabled]="categoryCommands.isCreatingCategory()"
+              (input)="onCategoryColorChange($event)"
+            />
           </label>
 
           <ion-button
             type="submit"
             expand="block"
-            [disabled]="!canCreateCategory() || facade.isLoading()"
+            [disabled]="
+              !canCreateCategory() || taskList.isLoading() || categoryCommands.isCreatingCategory()
+            "
           >
             <ion-icon name="add-outline" slot="start"></ion-icon>
             Crear
@@ -189,7 +204,7 @@
         </form>
 
         <ion-list class="category-list">
-          @for (category of facade.categories(); track category.id) {
+          @for (category of taskList.categories(); track category.id) {
             @if (editingCategoryId() === category.id) {
               <ion-item class="category-edit-row" lines="full">
                 <ion-label>
@@ -197,6 +212,7 @@
                     label="Nombre"
                     labelPlacement="stacked"
                     [ngModel]="editingCategoryName()"
+                    [disabled]="categoryCommands.isCategoryPending(category.id)"
                     name="editingCategoryName"
                     (ngModelChange)="onEditingCategoryNameChange($event)"
                   ></ion-input>
@@ -206,6 +222,7 @@
                     <input
                       type="color"
                       [value]="editingCategoryColor()"
+                      [disabled]="categoryCommands.isCategoryPending(category.id)"
                       (input)="onEditingCategoryColorChange($event)"
                     />
                   </label>
@@ -215,7 +232,9 @@
                   <ion-button
                     fill="clear"
                     color="success"
-                    [disabled]="!canUpdateCategory()"
+                    [disabled]="
+                      !canUpdateCategory() || categoryCommands.isCategoryPending(category.id)
+                    "
                     aria-label="Guardar categoría"
                     (click)="saveCategoryEdit(category.id)"
                   >
@@ -225,6 +244,7 @@
                     fill="clear"
                     color="medium"
                     aria-label="Cancelar edición"
+                    [disabled]="categoryCommands.isCategoryPending(category.id)"
                     (click)="cancelCategoryEdit()"
                   >
                     <ion-icon name="close-outline" slot="icon-only"></ion-icon>
@@ -243,6 +263,7 @@
                     fill="clear"
                     color="medium"
                     [attr.aria-label]="'Editar ' + category.name"
+                    [disabled]="categoryCommands.isCategoryPending(category.id)"
                     (click)="startCategoryEdit(category)"
                   >
                     <ion-icon name="create-outline" slot="icon-only"></ion-icon>
@@ -251,6 +272,7 @@
                     fill="clear"
                     color="danger"
                     [attr.aria-label]="'Eliminar ' + category.name"
+                    [disabled]="categoryCommands.isCategoryPending(category.id)"
                     (click)="deleteCategory(category.id)"
                   >
                     <ion-icon name="trash-outline" slot="icon-only"></ion-icon>

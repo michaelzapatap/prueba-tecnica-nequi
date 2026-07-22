@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideApplicationServices } from '../application/application.providers';
-import { TaskBoardFacade } from '../application/facades/task-board.facade';
+import { DEFAULT_CATEGORY_COLOR } from '../domain/config/category.config';
+import { CategoryCommandFacade } from '../application/facades/category-command.facade';
+import { TaskListFacade } from '../application/facades/task-list.facade';
 import { FeatureFlagService } from '../application/feature-flags/feature-flag.service';
 import {
   Category,
@@ -169,7 +171,7 @@ describe('HomePage interactions', () => {
     await component.createTask();
     fixture.detectChanges();
 
-    expect(component.facade.tasks().map((task) => task.title)).toEqual(['Preparar entrega']);
+    expect(component.taskList.tasks().map((task) => task.title)).toEqual(['Preparar entrega']);
     expect(fixture.nativeElement.querySelector('.task-row h2')?.textContent).toContain(
       'Preparar entrega',
     );
@@ -178,18 +180,18 @@ describe('HomePage interactions', () => {
   it('completes and deletes a task through page handlers', async () => {
     component.onTaskTitleChange('Enviar evidencia');
     await component.createTask();
-    const [task] = component.facade.tasks();
+    const [task] = component.taskList.tasks();
 
     await component.toggleTask(task, true);
-    expect(component.facade.completedTasks()).toBe(1);
+    expect(component.taskList.completedTasks()).toBe(1);
 
     await component.deleteTask(task.id);
-    expect(component.facade.tasks()).toEqual([]);
+    expect(component.taskList.tasks()).toEqual([]);
   });
 
   it('expands a large rendered list when the user clicks the load-more control', async () => {
     taskRepository.seed(35);
-    await TestBed.inject(TaskBoardFacade).load();
+    await TestBed.inject(TaskListFacade).load();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('.task-row')).toHaveSize(30);
@@ -200,5 +202,80 @@ describe('HomePage interactions', () => {
 
     expect(fixture.nativeElement.querySelectorAll('.task-row')).toHaveSize(35);
     expect(fixture.nativeElement.querySelector('.load-more-button')).toBeNull();
+  });
+
+  it('creates, edits, cancels and deletes a category through page handlers', async () => {
+    const createColorInput = document.createElement('input');
+    createColorInput.type = 'color';
+    createColorInput.value = '#27ab83';
+    const createColorEvent = new Event('input');
+    Object.defineProperty(createColorEvent, 'target', { value: createColorInput });
+    component.onCategoryNameChange('Trabajo');
+    component.onCategoryColorChange(createColorEvent);
+
+    await component.createCategory();
+    const [category] = component.taskList.categories();
+
+    expect(category).toEqual(jasmine.objectContaining({ name: 'Trabajo', color: '#27ab83' }));
+    expect(component.categoryName()).toBe('');
+    expect(component.categoryColor()).toBe(DEFAULT_CATEGORY_COLOR);
+
+    component.startCategoryEdit(category);
+    expect(component.editingCategoryId()).toBe(category.id);
+    const editingColorInput = document.createElement('input');
+    editingColorInput.type = 'color';
+    editingColorInput.value = '#8f9bb3';
+    const editingColorEvent = new Event('input');
+    Object.defineProperty(editingColorEvent, 'target', { value: editingColorInput });
+    component.onEditingCategoryNameChange('Archivo');
+    component.onEditingCategoryColorChange(editingColorEvent);
+    await component.saveCategoryEdit(category.id);
+
+    expect(component.taskList.categories()[0]).toEqual(
+      jasmine.objectContaining({ name: 'Archivo', color: '#8f9bb3' }),
+    );
+    expect(component.editingCategoryId()).toBeNull();
+
+    component.startCategoryEdit(component.taskList.categories()[0]);
+    component.cancelCategoryEdit();
+    expect(component.editingCategoryName()).toBe('');
+    expect(component.editingCategoryColor()).toBe(DEFAULT_CATEGORY_COLOR);
+
+    await component.deleteCategory(category.id);
+    expect(component.taskList.categories()).toEqual([]);
+  });
+
+  it('keeps form values when commands fail and ignores invalid submissions', async () => {
+    const categoryCommands = TestBed.inject(CategoryCommandFacade);
+    const createCategory = spyOn(categoryCommands, 'createCategory').and.resolveTo(false);
+    const updateCategory = spyOn(categoryCommands, 'updateCategory').and.resolveTo(false);
+
+    await component.createCategory();
+    expect(createCategory).not.toHaveBeenCalled();
+
+    component.onCategoryNameChange('Entrega');
+    await component.createCategory();
+    expect(component.categoryName()).toBe('Entrega');
+
+    component.editingCategoryName.set('');
+    await component.saveCategoryEdit('category-1');
+    expect(updateCategory).not.toHaveBeenCalled();
+  });
+
+  it('normalizes input events and default selections', () => {
+    component.onTaskCategoryChange(null);
+    component.onCategoryFilterChange(undefined);
+    component.onTaskTitleChange(123);
+    component.onSearchQueryChange(null);
+    component.onCategoryNameChange(456);
+    component.onCategoryColorChange(new Event('input'));
+    component.onEditingCategoryColorChange(new Event('input'));
+
+    expect(component.selectedTaskCategoryId()).toBe('');
+    expect(component.taskList.selectedCategory()).toBe('all');
+    expect(component.taskTitle()).toBe('123');
+    expect(component.categoryName()).toBe('456');
+    expect(component.categoryColor()).toBe(DEFAULT_CATEGORY_COLOR);
+    expect(component.editingCategoryColor()).toBe(DEFAULT_CATEGORY_COLOR);
   });
 });

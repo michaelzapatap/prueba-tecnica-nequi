@@ -14,23 +14,46 @@ export interface TaskCounts {
   readonly completed: number;
 }
 
-export const TASK_RENDER_BATCH_SIZE = 30;
+export interface TaskListPage {
+  readonly tasks: readonly Task[];
+  readonly matchingTaskCount: number;
+}
 
 export function queryTasks(tasks: readonly Task[], query: TaskListQuery): readonly Task[] {
-  const normalizedSearchQuery = query.searchQuery.trim().toLowerCase();
-  let filteredTasks = tasks;
+  const normalizedSearchQuery = normalizeSearchQuery(query);
+  return tasks.filter((task) => matchesTask(task, query, normalizedSearchQuery));
+}
 
-  if (query.categoryFilter === 'uncategorized') {
-    filteredTasks = filteredTasks.filter((task) => task.categoryId === null);
-  } else if (query.categoryFilter !== 'all') {
-    filteredTasks = filteredTasks.filter((task) => task.categoryId === query.categoryFilter);
+export function selectTaskListPage(
+  tasks: readonly Task[],
+  query: TaskListQuery,
+  limit: number,
+): TaskListPage {
+  const normalizedSearchQuery = normalizeSearchQuery(query);
+
+  if (query.categoryFilter === 'all' && !normalizedSearchQuery) {
+    return {
+      tasks: tasks.slice(0, limit),
+      matchingTaskCount: tasks.length,
+    };
   }
 
-  if (!query.isSearchEnabled || !normalizedSearchQuery) {
-    return filteredTasks;
+  const page: Task[] = [];
+  let matchingTaskCount = 0;
+
+  for (const task of tasks) {
+    if (!matchesTask(task, query, normalizedSearchQuery)) {
+      continue;
+    }
+
+    matchingTaskCount += 1;
+
+    if (page.length < limit) {
+      page.push(task);
+    }
   }
 
-  return filteredTasks.filter((task) => task.title.toLowerCase().includes(normalizedSearchQuery));
+  return { tasks: page, matchingTaskCount };
 }
 
 export function sortTasksByCreationDate(tasks: readonly Task[]): readonly Task[] {
@@ -52,4 +75,21 @@ export function countTasks(tasks: readonly Task[]): TaskCounts {
   }
 
   return { pending, completed };
+}
+
+function normalizeSearchQuery(query: TaskListQuery): string {
+  return query.isSearchEnabled ? query.searchQuery.trim().toLowerCase() : '';
+}
+
+function matchesTask(task: Task, query: TaskListQuery, normalizedSearchQuery: string): boolean {
+  const matchesCategory =
+    query.categoryFilter === 'all' ||
+    (query.categoryFilter === 'uncategorized'
+      ? task.categoryId === null
+      : task.categoryId === query.categoryFilter);
+
+  return (
+    matchesCategory &&
+    (!normalizedSearchQuery || task.title.toLowerCase().includes(normalizedSearchQuery))
+  );
 }
