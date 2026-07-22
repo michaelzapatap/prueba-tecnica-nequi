@@ -1,6 +1,6 @@
 # Generación y publicación pendiente del IPA firmado
 
-El proyecto contiene Cordova iOS 8.1 y los recursos necesarios, pero Windows no puede ejecutar Xcode ni firmar un IPA. Este procedimiento debe realizarse en un Mac autorizado por el titular de la cuenta Apple Developer y partiendo exactamente del tag `v0.1.1`.
+El proyecto contiene Cordova iOS 8.1 y los recursos necesarios, pero Windows no puede ejecutar Xcode ni firmar un IPA. Este procedimiento debe realizarse en un Mac autorizado por el titular de la cuenta Apple Developer y partiendo exactamente del tag `v0.1.2`.
 
 ## Decisión de distribución antes de comenzar
 
@@ -46,7 +46,7 @@ Los mínimos de Xcode, CocoaPods, `ios-deploy` y Node se basan en la [guía ofic
    git show origin/feature/project-foundation:tools/verify-ios-release-environment.sh \
      > /tmp/verify-ios-release-environment.sh
    chmod 700 /tmp/verify-ios-release-environment.sh
-   git checkout v0.1.1
+   git checkout v0.1.2
    git status --short
    git rev-parse HEAD
    npm ci
@@ -141,7 +141,7 @@ Si la plataforma ya existe, `platform add` informará que está instalada y pued
    ```bash
    IPA_DIRECTORY="$(dirname "$IPA_PATH")"
    IPA_FILENAME="$(basename "$IPA_PATH")"
-   (cd "$IPA_DIRECTORY" && shasum -a 256 "$IPA_FILENAME") | tee nequi-tasks-v0.1.1.ipa.sha256
+   (cd "$IPA_DIRECTORY" && shasum -a 256 "$IPA_FILENAME") | tee nequi-tasks-v0.1.2.ipa.sha256
    ```
 
 5. Instalar en un dispositivo incluido en el perfil o subir a TestFlight. Ejecutar el mismo smoke de Android: crear categoría y tarea, asignar, buscar, completar, forzar cierre, reabrir, validar offline y eliminar los datos de prueba. Capturar evidencia sin mostrar datos personales ni identificadores del dispositivo.
@@ -166,7 +166,7 @@ Si la plataforma ya existe, `platform add` informará que está instalada y pued
 Solo si la inspección confirma que el artefacto no revela UDID ni información prohibida:
 
 ```bash
-gh release upload v0.1.1 "$IPA_PATH" nequi-tasks-v0.1.1.ipa.sha256 \
+gh release upload v0.1.2 "$IPA_PATH" nequi-tasks-v0.1.2.ipa.sha256 \
   --repo michaelzapatap/prueba-tecnica-nequi \
   --clobber
 ```

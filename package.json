@@ -1,6 +1,6 @@
 {
   "name": "nequi-tasks",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Technical assessment candidate",
   "scripts": {
     "ng": "ng",

@@ -55,7 +55,7 @@
 
 ## En progreso
 
-- Sin tareas activas.
+- Preparación, publicación y smoke físico de la release correctiva `v0.1.2`.
 
 ## Pendiente
 

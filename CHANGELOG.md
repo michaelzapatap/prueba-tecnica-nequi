@@ -1,5 +1,21 @@
 # Historial de cambios
 
+## 2026-07-22 08:15
+
+### Changed
+
+Versión de aplicación alineada a `0.1.2` en npm y Cordova. Las notas de release describen las correcciones derivadas de la evaluación, los controles automatizados y la cadena de suministro esperada sin anticipar resultados del smoke posterior a la publicación.
+
+Archivos:
+
+- `package.json`, `package-lock.json` y `config.xml`
+- `RELEASE_NOTES.md` y `docs/IOS_RELEASE.md`
+- `CHANGELOG.md` y `ROADMAP.md`
+
+Motivo:
+
+Preparar un tag correctivo reproducible cuya versión coincida con el APK, el SBOM, los checksums y las attestations generadas por GitHub Actions.
+
 ## 2026-07-22 07:54
 
 ### Refactored
