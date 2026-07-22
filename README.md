@@ -92,7 +92,7 @@ npm run security:check
 
 `security:check` valida que Cordova no recupere orígenes o intents HTTP/HTTPS comodín y que la Content Security Policy conserve únicamente los endpoints Firebase necesarios. La allowlist actual autoriza Firebase Installations y Firebase Remote Config.
 
-Las respuestas solicitadas por la prueba están en [TECHNICAL_ANSWERS.md](TECHNICAL_ANSWERS.md). La matriz y las diez capturas realizadas en el Samsung físico están en [evidence/README.md](evidence/README.md), incluido el smoke final del APK público exacto `v0.1.1`.
+Las respuestas solicitadas por la prueba están en [TECHNICAL_ANSWERS.md](TECHNICAL_ANSWERS.md). La matriz y las catorce capturas realizadas en el Samsung físico están en [evidence/README.md](evidence/README.md), incluido el smoke correctivo del APK público exacto `v0.1.2`.
 
 ### Integración continua
 
@@ -181,14 +181,14 @@ Al subir un tag `vMAJOR.MINOR.PATCH`, `.github/workflows/android-release.yml` co
 
 La firma se aprovisiona mediante `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` y `ANDROID_KEY_PASSWORD` en GitHub Secrets. El runner crea el keystore y `build.json` de forma efímera y los elimina incluso si falla el job.
 
-Para verificar una descarga de `v0.1.1`:
+Para verificar una descarga de `v0.1.2`:
 
 ```bash
-gh release download v0.1.1 --repo michaelzapatap/prueba-tecnica-nequi
+gh release download v0.1.2 --repo michaelzapatap/prueba-tecnica-nequi
 sha256sum --check SHA256SUMS.txt
-gh attestation verify nequi-tasks-v0.1.1.apk --repo michaelzapatap/prueba-tecnica-nequi
+gh attestation verify nequi-tasks-v0.1.2.apk --repo michaelzapatap/prueba-tecnica-nequi
 # SHA-256 esperado del APK:
-# 1a3ba55925a3cb112285563b7e44201a488884369d0d1a9503e928a8e33f2559
+# bf07978620c4257715f347c6bf5a5d954858e288c2ec77d4cd26dc91ae82a9bf
 ```
 
 Una attestation prueba procedencia e integridad respecto del workflow; no sustituye revisión de código, pruebas ni análisis de vulnerabilidades.
@@ -216,7 +216,7 @@ npm run android:devices
 npm run android:run:device
 ```
 
-Si aparece `unauthorized`, desbloquee el teléfono y acepte nuevamente el diálogo RSA. El APK público exacto `v0.1.1` se verificó, instaló y probó por ADB en un Samsung Galaxy S21 FE físico. El smoke cubrió tareas, categorías, búsqueda, completado, persistencia, fallback offline y eliminación; las conexiones deshabilitadas para la prueba se restauraron al finalizar.
+Si aparece `unauthorized`, desbloquee el teléfono y acepte nuevamente el diálogo RSA. El APK público exacto `v0.1.2` se verificó por checksum, firma y attestations, se instaló y se probó por ADB en un Samsung Galaxy S21 FE físico. El smoke cubrió tareas, categorías, búsqueda, completado, persistencia, fallback offline y eliminación; las conexiones deshabilitadas para la prueba se restauraron al finalizar.
 
 Una instalación debug y una release usan firmas diferentes. Para instalar el APK release sobre un equipo que tenga la versión debug es necesario desinstalar primero la app, lo cual elimina sus datos locales; respalde las tareas importantes antes de hacerlo.
 

@@ -1,5 +1,30 @@
 # Historial de cambios
 
+## 2026-07-22 08:40
+
+### Added
+
+Publicación y validación física de la release correctiva `v0.1.2`. El asset público exacto se descargó desde GitHub Releases, se verificó por checksum, firma APK y attestations de provenance SLSA/SBOM CycloneDX, y se instaló sobre `v0.1.1` en el Samsung Galaxy S21 FE.
+
+El smoke cubrió creación y asignación de categoría, creación, búsqueda, completado y eliminación de tarea, persistencia después de cierre forzado y fallback con Wi-Fi y datos deshabilitados. Se añadieron cuatro capturas reproducibles.
+
+### Security
+
+La release fue construida desde el tag `v0.1.2` con material de firma efímero administrado mediante GitHub Secrets. No se publicaron llaves, contraseñas, tokens ni archivos locales de firma. La conectividad y la densidad física del dispositivo se restauraron después de las verificaciones controladas.
+
+### Docs
+
+La memoria, hoja de ruta, guía oficial, checklist y protocolo de evidencias reflejan el APK vigente, su SHA-256, SBOM, attestations y resultados reales del smoke.
+
+Archivos:
+
+- `evidence/README.md` y `evidence/android/11-*.png` a `14-*.png`
+- `PROJECT_MEMORY.md`, `CHANGELOG.md`, `ROADMAP.md`, `README.md` y `DELIVERY_CHECKLIST.md`
+
+Motivo:
+
+Cerrar de forma auditable las correcciones solicitadas por el evaluador con el mismo binario firmado y publicado que se probó en el dispositivo físico.
+
 ## 2026-07-22 08:15
 
 ### Changed

@@ -52,14 +52,15 @@
 - Corrección de las seis observaciones del evaluador: cobertura crítica, estados asíncronos, evidencia ejecutable de rendimiento, separación de responsabilidades, política de red restrictiva y constantes compartidas.
 - Umbrales globales de cobertura: 85 % de sentencias, 65 % de ramas, 85 % de funciones y 85 % de líneas.
 - Allowlist Cordova limitada a los endpoints Firebase utilizados, CSP restrictiva y validación automática mediante `npm run security:check`.
+- Publicación de la release correctiva `v0.1.2` desde el tag atestado, con APK firmado, checksum, SBOM CycloneDX y attestations de provenance/SBOM.
+- Descarga e instalación del asset público exacto `v0.1.2` y smoke completo en el Samsung físico, con evidencias de búsqueda, persistencia, offline y limpieza.
 
 ## En progreso
 
-- Preparación, publicación y smoke físico de la release correctiva `v0.1.2`.
+- Sin tareas activas.
 
 ## Pendiente
 
-- Generar, instalar y someter a smoke físico una release correctiva posterior a `v0.1.1`, y publicar sus evidencias, checksum y attestations.
 - Actualizar las dependencias transitivas `uuid` de Cordova/webpack cuando sus proveedores publiquen una corrección compatible.
 - Ejecutar en macOS el preflight, definir TestFlight o distribución `ad-hoc` privada, generar el IPA firmado, completar el smoke iOS y publicar el enlace seguro.
 - Asociar el repositorio como fork solo si el evaluador proporciona el upstream original correcto.

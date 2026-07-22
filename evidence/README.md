@@ -4,11 +4,12 @@
 
 - Dispositivo físico: Samsung Galaxy S21 FE (`SM-G990E`).
 - Sistema: Android 16, API 36, `arm64-v8a`.
-- Aplicación: `com.nequitasks.app`; validación final sobre el APK publicado `v0.1.1`.
+- Aplicación: `com.nequitasks.app`; validación final sobre el APK publicado `v0.1.2`.
 - Proyecto Firebase: `nequi-tasks-mz-20260717`.
 - Plantilla: `firebase/remote-config.template.json`.
 - Evidencias `01` a `06`: build debug de control con intervalo mínimo de fetch de 60 segundos.
 - Evidencias `07` a `10`: asset release exacto `nequi-tasks-v0.1.1.apk` descargado desde GitHub Releases.
+- Evidencias `11` a `14`: asset release exacto `nequi-tasks-v0.1.2.apk` descargado desde GitHub Releases.
 
 El serial ADB, las credenciales de Firebase y la llave de firma no forman parte de estas evidencias.
 
@@ -83,3 +84,43 @@ adb install -r nequi-tasks-v0.1.1.apk
 Si Android devuelve `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, existe una instalación firmada con otro certificado. Respalde primero cualquier dato importante, desinstale el paquete anterior y repita la instalación. Una app release no debuggable no permite extraer sus datos con `run-as`.
 
 Las interacciones finales se enviaron como entradas táctiles y de teclado ADB sobre la WebView release no debuggable, equivalentes al uso manual en pantalla. No se habilitó depuración WebView ni se modificó el APK publicado.
+
+## Smoke correctivo del APK publicado v0.1.2
+
+El 22 de julio de 2026, aproximadamente entre las 08:20 y las 08:39 (America/Bogota), GitHub Actions construyó y publicó la release correctiva desde el tag inmutable `v0.1.2`. Después se descargó el asset público exacto, se verificaron su checksum, firma y dos attestations, se instaló como actualización sobre `v0.1.1` y se probó en el Samsung físico.
+
+- Release: <https://github.com/michaelzapatap/prueba-tecnica-nequi/releases/tag/v0.1.2>
+- Workflow: <https://github.com/michaelzapatap/prueba-tecnica-nequi/actions/runs/29923431832>
+- Commit atestado: `0626a53e46ac0e266dee7602cde68b26ee64fe6d`.
+- Asset: `nequi-tasks-v0.1.2.apk`, 2.995.776 bytes.
+- SHA-256 verificado: `bf07978620c4257715f347c6bf5a5d954858e288c2ec77d4cd26dc91ae82a9bf`.
+- SBOM: `nequi-tasks-v0.1.2.sbom.cdx.json`, SHA-256 `f00e9b840c7c3de433f8101871dbfb45ade2a63620bd34dc4cd97fcacdcadc3a`.
+- Attestations verificadas: provenance SLSA v1 y SBOM CycloneDX, ambas vinculadas al digest del APK, al tag y al workflow de release.
+- Firma APK: esquema v2, RSA 3072; certificado SHA-256 `358c72974233cc8c0aa96f80a9b73f2a35f67f7bbd8dafe73c383780beb34dfa`.
+- Paquete instalado: `com.nequitasks.app`, `versionName=0.1.2`, `versionCode=102`, `targetSdk=36`.
+- La actualización mediante `adb install -r` conservó el estado local de `v0.1.1`. Wi-Fi y datos estaban activos al inicio y quedaron restaurados en `1`; ambos se confirmaron en `0` exclusivamente durante el escenario offline.
+
+| Caso                  | Acción reproducible                                                 | Resultado observado                                                         | Evidencia                                                                                |
+| --------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Tareas y categorías   | Crear `Revision012`, crear `Smoke012Final` y asignarla              | La tarea y la categoría aparecen en la vista `REVISION012`                  | [11-release-v0.1.2-search-enabled.png](android/11-release-v0.1.2-search-enabled.png)     |
+| Búsqueda activada     | Buscar `Final` con `task_search_enabled=true`                       | El buscador remoto permanece visible y devuelve la tarea coincidente        | [11-release-v0.1.2-search-enabled.png](android/11-release-v0.1.2-search-enabled.png)     |
+| Completar y persistir | Marcar la tarea, forzar cierre, relanzar y volver al listado        | Estado `Lista`, categoría y tarea sobreviven al reinicio del proceso        | [12-release-v0.1.2-persistence.png](android/12-release-v0.1.2-persistence.png)           |
+| Fallback offline      | Deshabilitar Wi-Fi/datos, relanzar y buscar `Final`                 | La búsqueda cacheada y los datos locales continúan disponibles sin conexión | [13-release-v0.1.2-offline-fallback.png](android/13-release-v0.1.2-offline-fallback.png) |
+| Eliminación           | Restaurar las redes, eliminar primero la tarea y luego la categoría | No quedan tareas ni segmentos de categorías de prueba                       | [14-release-v0.1.2-delete-cleanup.png](android/14-release-v0.1.2-delete-cleanup.png)     |
+
+### Verificación reproducible de v0.1.2
+
+```bash
+gh release download v0.1.2 \
+  --repo michaelzapatap/prueba-tecnica-nequi \
+  --pattern nequi-tasks-v0.1.2.apk \
+  --pattern nequi-tasks-v0.1.2.sbom.cdx.json \
+  --pattern SHA256SUMS.txt
+sha256sum --check SHA256SUMS.txt
+gh attestation verify nequi-tasks-v0.1.2.apk \
+  --repo michaelzapatap/prueba-tecnica-nequi
+adb install -r nequi-tasks-v0.1.2.apk
+adb shell dumpsys package com.nequitasks.app
+```
+
+La captura offline se produjo con `adb shell svc wifi disable` y `adb shell svc data disable`; ambas conexiones se reactivaron inmediatamente después. Las capturas se obtuvieron en el dispositivo con `adb shell screencap` y se transfirieron con `adb pull` para preservar el PNG sin canalizar datos binarios por PowerShell. El ajuste temporal de densidad usado únicamente para alcanzar el control de limpieza se revirtió a la densidad física original de 480 antes de la evidencia final.
